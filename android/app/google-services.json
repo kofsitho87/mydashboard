@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "880291223630",
+    "firebase_url": "https://mytodo-12180.firebaseio.com",
+    "project_id": "mytodo-12180",
+    "storage_bucket": "mytodo-12180.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:880291223630:android:799cd0c5c885c89a",
+        "android_client_info": {
+          "package_name": "com.kofsitho.mydashboard"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "880291223630-0qrnjut80q6neph0aqbu942515qhtten.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.kofsitho.mydashboard",
+            "certificate_hash": "9d565a23a375bc6b119e82963f7c984f11e57170"
+          }
+        },
+        {
+          "client_id": "880291223630-5ilurh09o9utn6uouj626rssfjfk065b.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCYPvq5qc4UbfNjaDMaeHod4rGv15VKv7I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "880291223630-5ilurh09o9utn6uouj626rssfjfk065b.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "880291223630-fk9thilj8vmlk5d4q3d0pffd40qsdrpb.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.flutterStudyApp"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
