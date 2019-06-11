@@ -24,11 +24,10 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^0.1.2
   font_awesome_flutter:
-  # firebase_core: 0.2.5+1
-  # firebase_auth: 0.7.0
-  # cloud_firestore: 0.8.2+3
-  # google_sign_in: 3.2.4
-  # path_provider: 0.4.1
+#  firebase_core: 0.2.5+1
+#  firebase_auth: 0.7.0
+#  cloud_firestore: 0.8.2+3
+#  google_sign_in: 3.2.4
   firebase_core:
   firebase_auth:
   cloud_firestore:
