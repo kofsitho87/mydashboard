@@ -47,9 +47,25 @@ class FileStorage {
     }));
   }
 
+
+  Future<String> loadTodosFilter() async {
+    final file = await _getLocalFile();
+    final string = await file.readAsString();
+    final json = JsonDecoder().convert(string);
+    return json['todos_filter'];
+  }
+
+  Future<File> saveTodosFilter(String filter) async {
+    final file = await _getLocalFile();
+    return file.writeAsString(JsonEncoder().convert({
+      'todos_filter': filter,
+    }));
+  }
+
+
   Future<File> _getLocalFile() async {
     final dir = await getDirectory();
-    print(dir);
+    //print(dir);
     return File('${dir.path}/ArchSampleStorage__$tag.json');
   }
 

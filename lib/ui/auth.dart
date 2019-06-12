@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../bloc/blocs.dart';
 import '../routes/index.dart';
 import './signin.dart';
 import './signup.dart';
 
-import '../bloc/blocs.dart';
 
-import '../resources/auth_repository.dart';
-import '../resources/file_stroage.dart';
-import 'package:path_provider/path_provider.dart';
+// import '../resources/auth_repository.dart';
+// import '../resources/file_stroage.dart';
+// import 'package:path_provider/path_provider.dart';
 
 class AuthApp extends StatelessWidget {
   final AuthBloc authBloc;
@@ -17,14 +17,7 @@ class AuthApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
-    final authRepository = AuthRepository(
-      fileStorage: const FileStorage(
-        '__flutter_bloc_app__',
-        getApplicationDocumentsDirectory,
-      )
-    );
-    final signinBloc = SigninBloc(authBloc: authBloc, authRepository: authRepository);
+    final signinBloc = SigninBloc(authBloc: authBloc);
 
     return BlocProvider(
       bloc: signinBloc,

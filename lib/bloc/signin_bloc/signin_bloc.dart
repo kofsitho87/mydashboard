@@ -4,14 +4,10 @@ import 'package:bloc/bloc.dart';
 import './bloc.dart';
 
 import '../blocs.dart';
-import '../../resources/auth_repository.dart';
 
 class SigninBloc extends Bloc<SigninEvent, SigninState> {
   final AuthBloc authBloc;
-  final AuthRepository authRepository;
-  //StreamSubscription authSubscription;
-
-  SigninBloc({@required this.authBloc, @required this.authRepository});
+  SigninBloc({@required this.authBloc});
 
   @override
   SigninState get initialState => NotSignin();
@@ -33,11 +29,11 @@ class SigninBloc extends Bloc<SigninEvent, SigninState> {
     try {
       yield LoadingSignin();
       //await Future.delayed(const Duration(milliseconds: 3000));
-      final user = await this.authRepository.login(email, password);
+      
+      await this.authBloc.repository.login(email, password);
       yield SuccessSignin();
 
       authBloc.dispatch( CheckAuthEvent() );
-
     } catch (e) {
       //yield FailSignin(error: e.toString());
       yield FailSignin(error: '로그인실패: 존재하지 않는 계정입니다.');
@@ -49,9 +45,9 @@ class SigninBloc extends Bloc<SigninEvent, SigninState> {
   Stream<SigninState> _mapToSignupActionToState(String email, String userName, String password) async* {
     try {
       yield LoadingSignin();
-      final user = await this.authRepository.signUp(email, userName, password);
-      yield SuccessSignup();
 
+      await this.authBloc.repository.signUp(email, userName, password);
+      yield SuccessSignup();
       yield* _mapToSigninActionToState(email, password);
 
     } catch (e) {
@@ -64,7 +60,8 @@ class SigninBloc extends Bloc<SigninEvent, SigninState> {
   Stream<SigninState> _mapToGoogleSigninActionToState() async* {
     try {
       yield LoadingSignin();
-      await this.authRepository.googleSignin();
+
+      await this.authBloc.repository.googleSignin();
       yield SuccessSignin();
 
       authBloc.dispatch( CheckAuthEvent() );

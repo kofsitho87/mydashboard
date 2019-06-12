@@ -5,7 +5,7 @@ import 'package:bloc/bloc.dart';
 import 'package:path_provider/path_provider.dart';
 
 import './bloc/blocs.dart';
-import './resources/repository.dart';
+import './resources/auth_repository.dart';
 import './resources/file_stroage.dart';
 
 import 'ui/auth.dart';
@@ -22,7 +22,7 @@ class Main extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final authBloc = AuthBloc(
-      repository: Repository(
+      repository: AuthRepository(
         fileStorage: const FileStorage(
           '__flutter_bloc_app__',
           getApplicationDocumentsDirectory,

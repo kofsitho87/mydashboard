@@ -1,14 +1,52 @@
 import 'dart:async';
 import 'dart:core';
+import 'package:meta/meta.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:mydashboard/models/models.dart';
 
 import '../models/Todo.dart';
+import '../resources/file_stroage.dart';
 
 class TodosRepository {
+  final FileStorage fileStorage;
+  TodosRepository({@required this.fileStorage});
+
   FirebaseUser _user;
   DocumentReference _documentReference;
 
+  Future<VisibilityFilter> loadTodosFilter() async {
+    try {
+      final filter = await fileStorage.loadTodosFilter();
+      switch(filter){
+        case 'VisibilityFilter.all':
+          return VisibilityFilter.all;
+          break;
+
+        case 'VisibilityFilter.active':
+          return VisibilityFilter.active;
+          break;
+
+        case 'VisibilityFilter.completed':
+          return VisibilityFilter.completed;
+          break;
+      }
+      return VisibilityFilter.all;
+    } catch(e) {
+      throw e;
+    }
+  }
+
+  Future<bool> saveTodosFilter(VisibilityFilter filter) async {
+    try {
+      print('필터저장');
+      await fileStorage.saveTodosFilter(filter.toString());
+      return true;
+    } catch (e) {
+      throw e;
+      //return false;
+    }
+  }
   
   Future<List<Todo>> loadTodos() async {
     if(this._user == null) {

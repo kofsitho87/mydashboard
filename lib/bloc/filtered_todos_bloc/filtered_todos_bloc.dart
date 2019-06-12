@@ -22,6 +22,13 @@ class FilteredTodosBloc extends Bloc<FilteredTodosEvent, FilteredTodosState> {
   @override
   FilteredTodosState get initialState {
     if( todosBloc.currentState is TodosLoaded ){
+      this.todosBloc.todosRepository.loadTodosFilter().then((filter) {
+        print('filter is loaded : $filter');
+        dispatch(UpdateFilter(VisibilityFilter.active));
+      })
+      .catchError((e) {
+        print('filter is not loaded $e');
+      });
       return FilteredTodosLoaded((todosBloc.currentState as TodosLoaded).todos, VisibilityFilter.all);
     }
     return FilteredTodosLoading();
@@ -46,6 +53,7 @@ class FilteredTodosBloc extends Bloc<FilteredTodosEvent, FilteredTodosState> {
     UpdateFilter event,
   ) async* {
     if (todosBloc.currentState is TodosLoaded) {
+      await this.todosBloc.todosRepository.saveTodosFilter(event.filter);
       yield FilteredTodosLoaded(
         _mapTodosToFilteredTodos(
           (todosBloc.currentState as TodosLoaded).todos,
@@ -60,9 +68,10 @@ class FilteredTodosBloc extends Bloc<FilteredTodosEvent, FilteredTodosState> {
     UpdateTodos event,
   ) async* {
     
-    final visibilityFilter = currentState is FilteredTodosLoaded 
-      ? (currentState as FilteredTodosLoaded).activeFilter
-      : VisibilityFilter.all;
+    // final visibilityFilter = currentState is FilteredTodosLoaded 
+    //   ? (currentState as FilteredTodosLoaded).activeFilter
+    //   : VisibilityFilter.all;
+    final visibilityFilter = this.todosBloc.todosRepository.loadTodosFilter();
     
     print('visibilityFilter : $visibilityFilter');
 

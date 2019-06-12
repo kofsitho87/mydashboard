@@ -119,7 +119,8 @@ class TodoApp extends StatelessWidget {
                 enabled: enabled && activeFilter != VisibilityFilter.all,
                 title: Text('전체보기'),
                 onTap: () {
-                  filteredTodosBloc.dispatch(SortingTodos(SortingFilter.basic));
+                  //filteredTodosBloc.dispatch(SortingTodos(SortingFilter.basic));
+                  filteredTodosBloc.dispatch(UpdateFilter(VisibilityFilter.all));
                   Navigator.of(context).pop();
                 },
               ),
@@ -128,7 +129,8 @@ class TodoApp extends StatelessWidget {
                 enabled: enabled && activeFilter != VisibilityFilter.active,
                 title: Text('미완료만 보기'),
                 onTap: () {
-                  filteredTodosBloc.dispatch(VisibilityTodos(VisibilityFilter.active));
+                  filteredTodosBloc.dispatch(UpdateFilter(VisibilityFilter.active));
+                  //filteredTodosBloc.dispatch(VisibilityTodos(VisibilityFilter.active));
                   Navigator.of(context).pop();
                 },
               ),
@@ -137,7 +139,8 @@ class TodoApp extends StatelessWidget {
                 enabled: enabled && activeFilter != VisibilityFilter.completed,
                 title: Text('완료만 보기'),
                 onTap: () {
-                  filteredTodosBloc.dispatch(VisibilityTodos(VisibilityFilter.completed));
+                  filteredTodosBloc.dispatch(UpdateFilter(VisibilityFilter.completed));
+                  //filteredTodosBloc.dispatch(VisibilityTodos(VisibilityFilter.completed));
                   Navigator.of(context).pop();
                 },
               ),

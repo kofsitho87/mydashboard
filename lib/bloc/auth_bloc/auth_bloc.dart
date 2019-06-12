@@ -1,14 +1,12 @@
 import 'dart:async';
+import 'package:meta/meta.dart';
 import 'package:bloc/bloc.dart';
-import 'package:flutter/material.dart';
 import './bloc.dart';
 
-import '../../resources/repository.dart';
-//import '../../resources/file_stroage.dart';
+import '../../resources/auth_repository.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
-  final Repository repository;
-
+  final AuthRepository repository;
   AuthBloc({@required this.repository});
 
   @override
@@ -19,26 +17,15 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     AuthEvent event,
   ) async* {
     
-    if (event is LoginEvent) {
-      yield* _LoginAction(event.email, event.password);
-    }
-    else if (event is CheckAuthEvent) {
+    if (event is CheckAuthEvent) {
       yield* _CheckAuthAction();
     }else if (event is SignOutEvent) {
       yield* _SignOutAction();
-    }else if (event is SignUpEvent) {
-      yield* _SignUpAction(event);
     }
-  }
-
-  Stream<AuthState> _LoginAction(String email, String password) async* {
-    try {
-      yield Autenticating();
-
-      final user = await this.repository.login(email, password);
-      yield Autenticated(user: user);
-    } catch (e) {
-      yield NotAutenticated(error: e.toString());
+    else if (event is SignUpEvent) {
+      yield* _SignUpAction(event);
+    }else if (event is LoginEvent) {
+      yield* _LoginAction(event.email, event.password);
     }
   }
 
@@ -57,6 +44,17 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       yield Autenticating();
       final result = await this.repository.signOut();
       yield NotAutenticated(error: 'SignOut');
+    } catch (e) {
+      yield NotAutenticated(error: e.toString());
+    }
+  }
+
+  Stream<AuthState> _LoginAction(String email, String password) async* {
+    try {
+      yield Autenticating();
+
+      final user = await this.repository.login(email, password);
+      yield Autenticated(user: user);
     } catch (e) {
       yield NotAutenticated(error: e.toString());
     }

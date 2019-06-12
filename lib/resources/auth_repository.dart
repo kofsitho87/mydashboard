@@ -79,6 +79,7 @@ class AuthRepository {
       GoogleSignInAuthentication googleAuth = await googleUser.authentication;
       final credential = GoogleAuthProvider.getCredential(idToken: googleAuth.idToken, accessToken: googleAuth.accessToken);
       final FirebaseUser user = await _auth.signInWithCredential(credential);
+      
 
       final userModel = User(user.uid, user.displayName, user.email, provider: SnsProvider.google);
 
@@ -87,9 +88,10 @@ class AuthRepository {
         saveUserToFirebase(userModel);
       }
       
-      this.saveUser(userModel).then((file) {
-        print('파일 저장 성공!!! ${file.toString()}');
-      });
+      // this.saveUser(userModel).then((file) {
+      //   print('파일 저장 성공!!! ${file.toString()}');
+      // });
+      await this.saveUser(userModel);
 
       return userModel;
     } catch (e) {

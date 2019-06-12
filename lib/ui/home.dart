@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:path_provider/path_provider.dart';
 
+import '../resources/file_stroage.dart';
 import '../resources/todos_repository.dart';
 import '../bloc/blocs.dart';
 
@@ -22,7 +24,12 @@ class _HomeApp extends State<HomeApp> {
   
   @override
   void initState() {
-    todosBloc = TodosBloc(todosRepository: TodosRepository());
+    todosBloc = TodosBloc(todosRepository: TodosRepository(
+      fileStorage: const FileStorage(
+        '__Todos__',
+        getApplicationDocumentsDirectory,
+      )
+    ));
     super.initState();
   }
 
