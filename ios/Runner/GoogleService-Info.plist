@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>880291223630-fk9thilj8vmlk5d4q3d0pffd40qsdrpb.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.880291223630-fk9thilj8vmlk5d4q3d0pffd40qsdrpb</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>880291223630-0qrnjut80q6neph0aqbu942515qhtten.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyDzXkQJffEDe96ZjEK_mwulQCBCZ35mWnM</string>
+	<key>GCM_SENDER_ID</key>
+	<string>880291223630</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.example.flutterStudyApp</string>
+	<key>PROJECT_ID</key>
+	<string>mytodo-12180</string>
+	<key>STORAGE_BUCKET</key>
+	<string>mytodo-12180.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:880291223630:ios:d7dbc65fd454b535</string>
+	<key>DATABASE_URL</key>
+	<string>https://mytodo-12180.firebaseio.com</string>
+</dict>
+</plist>
