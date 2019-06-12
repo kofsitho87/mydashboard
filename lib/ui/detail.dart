@@ -110,6 +110,12 @@ class _DetailApp extends State<DetailApp> {
   }
 
   void _updateTodoAction(){
+    if( todoTitleController.text.length < 1 ){
+      final snackBar = SnackBar(content: Text('할일을 입력해주세요!!'));
+      _scaffoldKey.currentState.showSnackBar(snackBar);
+      return;
+    }
+    
     final todo = Todo(todoTitleController.text, _category, 
       completeDate: _completeDate == null ? null : _completeDate.add(Duration(hours: 23, minutes: 59, seconds: 59)), 
       id: widget.todo.id, 

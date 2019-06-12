@@ -16,7 +16,7 @@ class TodosRepository {
     }
 
     _documentReference = Firestore.instance.collection("USERS").document(_user.uid);
-    QuerySnapshot querySnapshot = await _documentReference.collection('Todos').getDocuments();
+    QuerySnapshot querySnapshot = await _documentReference.collection('Todos').where("deleted", isEqualTo: false).getDocuments();
     final _todos = querySnapshot.documents.map((snapshot) {
       return Todo(
         snapshot['title'], 
@@ -28,8 +28,8 @@ class TodosRepository {
         createdDate: snapshot['createdDate'] is Timestamp ? (snapshot['createdDate'] as Timestamp).toDate() : null
       );
     }).toList();
-    print("todos => ");
-    print(_todos);
+    // print("todos => ");
+    // print(_todos);
     return _todos;
   }
 

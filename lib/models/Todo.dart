@@ -8,6 +8,8 @@ class Todo {
   bool completed;
   String note;
 
+  bool deleted = false;
+
   Todo(this.title, this.category, {this.completed = false, String note, String id = '', DateTime completeDate, DateTime createdDate}) 
     : this.id = id,
       this.note = note ?? '',
@@ -34,6 +36,7 @@ class Todo {
       "completed"   : this.completed,
       "note"        : this.note,
       "createdDate" : this.createdDate,
+      "deleted"     : this.deleted,
     };
     return data; 
   }

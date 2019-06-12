@@ -98,8 +98,11 @@ class TodosBloc extends Bloc<TodosEvent, TodosState> {
     final todos = (currentState as TodosLoaded).todos;
     yield TodosLoading();
     
-    final deleted = await this.todosRepository.deleteTodo(event.todo);
-    if( deleted ){
+    //final deleted = await this.todosRepository.deleteTodo(event.todo);
+    final todo = event.todo;
+    todo.deleted = true;
+    final result = await this.todosRepository.updateTodo(todo);
+    if( result ){
       final updatedTodos = //(currentState as TodosLoaded)
         todos
         .where((todo) => todo.id != event.todo.id)

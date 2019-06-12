@@ -107,7 +107,7 @@ class TodoApp extends StatelessWidget {
     final enabled = (filteredTodosBloc.currentState is FilteredTodosLoaded) ? 
       (todosBloc.currentState as TodosLoaded).todos.length > 1 : 
       false;
-
+    final activeFilter = (filteredTodosBloc.currentState as FilteredTodosLoaded).activeFilter;
     showModalBottomSheet(
       context: context,
       builder: (BuildContext bc) {
@@ -115,7 +115,8 @@ class TodoApp extends StatelessWidget {
           child: Wrap(
             children: <Widget>[
               ListTile(
-                enabled: enabled,
+                leading: activeFilter == VisibilityFilter.all ? Icon(Icons.check_circle) : null,
+                enabled: enabled && activeFilter != VisibilityFilter.all,
                 title: Text('전체보기'),
                 onTap: () {
                   filteredTodosBloc.dispatch(SortingTodos(SortingFilter.basic));
@@ -123,7 +124,8 @@ class TodoApp extends StatelessWidget {
                 },
               ),
               ListTile(
-                enabled: enabled,
+                leading: activeFilter == VisibilityFilter.active ? Icon(Icons.check_circle) : null,
+                enabled: enabled && activeFilter != VisibilityFilter.active,
                 title: Text('미완료만 보기'),
                 onTap: () {
                   filteredTodosBloc.dispatch(VisibilityTodos(VisibilityFilter.active));
@@ -131,7 +133,8 @@ class TodoApp extends StatelessWidget {
                 },
               ),
               ListTile(
-                enabled: enabled,
+                leading: activeFilter == VisibilityFilter.completed ? Icon(Icons.check_circle) : null,
+                enabled: enabled && activeFilter != VisibilityFilter.completed,
                 title: Text('완료만 보기'),
                 onTap: () {
                   filteredTodosBloc.dispatch(VisibilityTodos(VisibilityFilter.completed));

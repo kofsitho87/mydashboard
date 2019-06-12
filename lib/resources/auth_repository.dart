@@ -43,6 +43,7 @@ class AuthRepository {
   Future<bool> signOut() async {
     try {
       _auth.signOut();
+      _googleSignIn.signOut();
       await fileStorage.clean();
       return true;
     } catch (e) {
@@ -76,7 +77,7 @@ class AuthRepository {
     try {
       GoogleSignInAccount googleUser = await _googleSignIn.signIn();
       GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-      final credential = GoogleAuthProvider.getCredential(idToken: googleAuth.idToken);
+      final credential = GoogleAuthProvider.getCredential(idToken: googleAuth.idToken, accessToken: googleAuth.accessToken);
       final FirebaseUser user = await _auth.signInWithCredential(credential);
 
       final userModel = User(user.uid, user.displayName, user.email, provider: SnsProvider.google);
