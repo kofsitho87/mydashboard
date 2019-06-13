@@ -15,8 +15,8 @@ import 'ui/components/index.dart';
 
 void main() {
   BlocSupervisor.delegate = SimpleBlocDelegate();
-  //runApp(ShowModalView());
-  runApp(Main());
+  runApp(TestHome());
+  //runApp(Main());
 }
 
 class Main extends StatelessWidget {
