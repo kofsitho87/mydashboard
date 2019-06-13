@@ -7,7 +7,7 @@ import '../routes/index.dart';
 import '../bloc/blocs.dart';
 import '../models/models.dart';
 
-import '../ui/components/components.dart';
+import '../ui/components/index.dart';
 import './detail.dart';
 
 
@@ -169,6 +169,40 @@ class TodoApp extends StatelessWidget {
     );
   }
 
+  void _showCategoryFilterList(context) {
+    final list = (todosBloc.currentState as TodosLoaded).categories.map((row) {
+      final content = ListTile(
+        title: Text(row.title),
+        onTap: () {
+          // filteredTodosBloc.dispatch(SortingTodos(SortingFilter.activeCompleted));
+          Navigator.of(context).pop();
+        },
+      );
+
+      return Column(
+        children: <Widget>[
+          content,
+          Divider()
+        ],
+      );
+    }).toList();
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext bc) {
+        return Container(
+          padding: EdgeInsets.only(bottom: 10),
+          //padding: EdgeInsets.symmetric(vertical: 10),
+          child: Wrap(
+            children: list,
+          ),
+        );
+        // return ListView(
+        //   children: list,
+        // );
+      }
+    );
+  }
+
   Future<bool> _confirmDismissAction(direction) async {
     return false;
     return direction == DismissDirection.endToStart;
@@ -259,22 +293,6 @@ class TodoApp extends StatelessWidget {
         );
       },
     );
-    // return CircularPercentIndicator(
-    //   radius: 180.0,
-    //   lineWidth: 15.0,
-    //   percent: 0.5,
-    //   center: Text("100%", style: TextStyle(fontSize: 30, color: Colors.white)),
-    //   progressColor: Theme.of(context).accentColor,
-    //   //fillColor: Colors.redAccent,
-    //   //backgroundColor: Colors.transparent,
-    //   //header: Text('header'),
-    //   //footer: Text('footer'),
-    //   animation: true,
-    //   animationDuration: 600,
-    //   circularStrokeCap: CircularStrokeCap.round,
-    //   //linearGradient: LinearGradient(),
-    //   //arcType: ArcType.FULL
-    // );
   }
 
   Widget _easyListView(todos){
@@ -329,6 +347,10 @@ class TodoApp extends StatelessWidget {
         //centerTitle: true,
         title: Text(userName),
         actions: <Widget>[
+          // IconButton(
+          //   icon: Icon(Icons.filter),
+          //   onPressed: () => _showCategoryFilterList(context),
+          // ),
           IconButton(
             icon: Icon(Icons.filter_list),
             onPressed: () => _showFilterListBottomSheet(context),

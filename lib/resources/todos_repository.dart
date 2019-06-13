@@ -15,6 +15,22 @@ class TodosRepository {
   FirebaseUser _user;
   DocumentReference _documentReference;
 
+  Future<List<Category>> loadCategories() async {
+    if(this._user == null) {
+      this._user = await FirebaseAuth.instance.currentUser();
+    }
+
+    _documentReference = Firestore.instance.collection("USERS").document(_user.uid);
+    QuerySnapshot querySnapshot = await _documentReference.collection('Categories').getDocuments();
+
+    return querySnapshot.documents.map((snapshot) {
+      return Category(
+        snapshot.documentID,
+        snapshot['title'], 
+      );
+    }).toList();
+  }
+
   Future<VisibilityFilter> loadTodosFilter() async {
     try {
       final filter = await fileStorage.loadTodosFilter();
@@ -33,7 +49,8 @@ class TodosRepository {
       }
       return VisibilityFilter.all;
     } catch(e) {
-      throw e;
+      return VisibilityFilter.all;
+      //throw e;
     }
   }
 

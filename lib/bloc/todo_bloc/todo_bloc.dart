@@ -34,7 +34,8 @@ class TodosBloc extends Bloc<TodosEvent, TodosState> {
   Stream<TodosState> _mapLoadTodosToState() async* {
     try {
       final todos = await this.todosRepository.loadTodos();
-      yield TodosLoaded(todos);
+      final categories = await this.todosRepository.loadCategories();
+      yield TodosLoaded(todos, categories);
     } catch (e) {
       print("todos not loaded why??? ${e.toString()}");
       yield TodosNotLoaded();
@@ -44,6 +45,7 @@ class TodosBloc extends Bloc<TodosEvent, TodosState> {
   Stream<TodosState> _mapAddTodoToState(AddTodo event) async* {
     try {
       final todos = (currentState as TodosLoaded).todos;
+      final categories = (currentState as TodosLoaded).categories;
       yield TodosLoading();
       final String todoId = await this.todosRepository.addTodo(event.todo.toMap());
       if(todoId != null) {
@@ -51,7 +53,8 @@ class TodosBloc extends Bloc<TodosEvent, TodosState> {
         todo.id = todoId;
         final List<Todo> updatedTodos = List.from(todos)..add(todo);
         yield TodosLoaded(
-          updatedTodos
+          updatedTodos,
+          categories
         );
       }else {
         throw('error');
@@ -70,6 +73,7 @@ class TodosBloc extends Bloc<TodosEvent, TodosState> {
   Stream<TodosState> _mapUpdateTodoToState(UpdateTodo event) async* {
     try {
       final todos = (currentState as TodosLoaded).todos;
+      final categories = (currentState as TodosLoaded).categories;
       yield TodosLoading();
       final result = await this.todosRepository.updateTodo(event.updatedTodo);
       print(result);
@@ -77,7 +81,7 @@ class TodosBloc extends Bloc<TodosEvent, TodosState> {
         final List<Todo> updatedTodos = todos.map((todo) {
           return todo.id == event.updatedTodo.id ? event.updatedTodo : todo;
         }).toList();
-        yield TodosLoaded(updatedTodos);
+        yield TodosLoaded(updatedTodos, categories);
       }else {
         throw('error');
       }
@@ -96,6 +100,7 @@ class TodosBloc extends Bloc<TodosEvent, TodosState> {
 
   Stream<TodosState> _mapDeleteTodoToState(DeleteTodo event) async* {
     final todos = (currentState as TodosLoaded).todos;
+    final categories = (currentState as TodosLoaded).categories;
     yield TodosLoading();
     
     //final deleted = await this.todosRepository.deleteTodo(event.todo);
@@ -107,7 +112,7 @@ class TodosBloc extends Bloc<TodosEvent, TodosState> {
         todos
         .where((todo) => todo.id != event.todo.id)
         .toList();
-      yield TodosLoaded(updatedTodos);
+      yield TodosLoaded(updatedTodos, categories);
     }
   }
 

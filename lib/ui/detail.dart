@@ -6,7 +6,7 @@ import 'package:modal_progress_hud/modal_progress_hud.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../bloc/todo_bloc/bloc.dart';
-import '../models/Todo.dart';
+import '../models/models.dart';
 
 class DetailPageRoute extends CupertinoPageRoute {
   final String title;
@@ -43,7 +43,7 @@ class _DetailApp extends State<DetailApp> {
   //String _todoTitle;
   DateTime _completeDate;
   String _category;
-  final categories = ['일', '개인', '공부', '여가'];
+  final categories = [];
 
   final todoTitleController = TextEditingController();
   final noteConttroller = TextEditingController();
@@ -60,9 +60,9 @@ class _DetailApp extends State<DetailApp> {
     super.initState();
   }
 
-  void addTodo(String title, String category, DateTime completeDate, String note) async {
+  void addTodo(String title, String category, DateTime completeDate, String note) {
     final todo = Todo(title, category, completeDate: completeDate, note: note);
-    await todosBloc.dispatch(AddTodo(todo));
+    todosBloc.dispatch(AddTodo(todo));
     Navigator.of(context).pop();
     // setState(() {
     //   todoTitleController.text = '';
@@ -203,6 +203,13 @@ class _DetailApp extends State<DetailApp> {
   }
 
   Widget get _categoryRow {
+    final categories = todosBloc.currentState is TodosLoaded ? (todosBloc.currentState as TodosLoaded).categories.map((Category c) {
+      return DropdownMenuItem(value: c.title, child: Text(c.title, style: TextStyle(color: Colors.grey)));
+    }).toList()
+    : null;
+    // final categories = this.categories.length > 0 ? this.categories.map((String value) {
+    //   return DropdownMenuItem(value: value, child: Text(value, style: TextStyle(color: Colors.grey)));
+    // }).toList() : [].toList();
     return Container(
       decoration: BoxDecoration(
         color: Color.fromRGBO(45, 58, 66, 1),
@@ -226,9 +233,7 @@ class _DetailApp extends State<DetailApp> {
                 // labelStyle: TextStyle(color: Colors.white),
                 enabledBorder: UnderlineInputBorder(borderSide: BorderSide.none)
               ),
-              items: categories.map((String value) {
-                return DropdownMenuItem(value: value, child: Text(value, style: TextStyle(color: Colors.grey)));
-              }).toList(),
+              items: categories,
               onChanged: (value) {
                 print(value);
                 setState(() {
@@ -277,6 +282,7 @@ class _DetailApp extends State<DetailApp> {
         maxLines: null,
         //style: textTheme.subhead,
         decoration: InputDecoration(
+          border: InputBorder.none,
           icon: Icon(Icons.note, color: Colors.white),
           //hintText: localizations.notesHint,
           labelText: '노트',

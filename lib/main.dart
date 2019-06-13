@@ -11,10 +11,11 @@ import './resources/file_stroage.dart';
 import 'ui/auth.dart';
 import 'ui/home.dart';
 
-//import 'ui/components/circle_progress.dart';
+import 'ui/components/index.dart';
 
 void main() {
   BlocSupervisor.delegate = SimpleBlocDelegate();
+  //runApp(ShowModalView());
   runApp(Main());
 }
 
