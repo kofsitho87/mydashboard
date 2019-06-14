@@ -12,9 +12,15 @@ class FilteredTodosBloc extends Bloc<FilteredTodosEvent, FilteredTodosState> {
 
   FilteredTodosBloc({@required this.todosBloc}) {
     todosSubscription = todosBloc.state.listen((state) {
-      if (state is TodosLoaded) {
-        final todos = (todosBloc.currentState as TodosLoaded).todos;
-        dispatch(UpdateTodos(todos));
+      // if (state is TodosLoaded) {
+      //   final todos = (todosBloc.currentState as TodosLoaded).todos;
+      //   dispatch(UpdateTodos(todos));
+      // }
+      if( todosBloc.currentState is TodosLoaded ){
+        if( (todosBloc.currentState as TodosLoaded).currentCategory != null ) {
+          final todos = (todosBloc.currentState as TodosLoaded).currentCategory.todos;
+          dispatch(UpdateTodos(todos));
+        }
       }
     });
   }
@@ -22,7 +28,9 @@ class FilteredTodosBloc extends Bloc<FilteredTodosEvent, FilteredTodosState> {
   @override
   FilteredTodosState get initialState {
     if( todosBloc.currentState is TodosLoaded ){
-      return FilteredTodosLoaded((todosBloc.currentState as TodosLoaded).todos, VisibilityFilter.all);
+      if( (todosBloc.currentState as TodosLoaded).currentCategory != null ) {
+        return FilteredTodosLoaded((todosBloc.currentState as TodosLoaded).currentCategory.todos, VisibilityFilter.all);
+      }
     }
     return FilteredTodosLoading();
   }
@@ -65,12 +73,17 @@ class FilteredTodosBloc extends Bloc<FilteredTodosEvent, FilteredTodosState> {
     //   ? (currentState as FilteredTodosLoaded).activeFilter
     //   : VisibilityFilter.all;
     final visibilityFilter = await this.todosBloc.todosRepository.loadTodosFilter();
-    //print('visibilityFilter : $visibilityFilter');
+    
+    // var _todos = [].toList();
+    // if( (todosBloc.currentState as TodosLoaded).currentCategory != null ) {
+    //   _todos = (todosBloc.currentState as TodosLoaded).currentCategory.todos;
+    // }
 
+    
     yield FilteredTodosLoading();
 
     final todos = _mapTodosToFilteredTodos(
-      (todosBloc.currentState as TodosLoaded).todos,
+      event.todos,
       visibilityFilter,
     );
 

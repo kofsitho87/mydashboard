@@ -20,15 +20,39 @@ class TodosRepository {
       this._user = await FirebaseAuth.instance.currentUser();
     }
 
+    List<Category> categories = [];
+
     _documentReference = Firestore.instance.collection("USERS").document(_user.uid);
     QuerySnapshot querySnapshot = await _documentReference.collection('Categories').getDocuments();
-
-    return querySnapshot.documents.map((snapshot) {
-      return Category(
-        snapshot.documentID,
-        snapshot['title'], 
+    for(var cateSnapshot in querySnapshot.documents) {
+      final cate = Category(
+        cateSnapshot.documentID,
+        cateSnapshot['title'],
+        ref: cateSnapshot.reference
       );
-    }).toList();
+      final todosSnapshot = await _documentReference.collection('Todos').where('category', isEqualTo: cateSnapshot.reference).getDocuments();
+      final todos = todosSnapshot.documents.map((snapshot) {
+        return Todo(
+          snapshot['title'], 
+          cate, //cateSnapshot['title'], 
+          id: snapshot.documentID, 
+          completed: snapshot['completed'],
+          note: snapshot['note'],
+          completeDate: snapshot['completeDate'] is Timestamp ? (snapshot['completeDate'] as Timestamp).toDate() : null,
+          createdDate: snapshot['createdDate'] is Timestamp ? (snapshot['createdDate'] as Timestamp).toDate() : null
+        );
+      }).toList();
+      cate.todos = todos;
+      categories.add(cate);
+    };
+    //print(categories);
+    return categories.toList();
+    // return querySnapshot.documents.map((snapshot) {
+    //   return Category(
+    //     snapshot.documentID,
+    //     snapshot['title'],
+    //   );
+    // }).toList();
   }
 
   Future<VisibilityFilter> loadTodosFilter() async {
@@ -69,13 +93,12 @@ class TodosRepository {
     if(this._user == null) {
       this._user = await FirebaseAuth.instance.currentUser();
     }
-
     _documentReference = Firestore.instance.collection("USERS").document(_user.uid);
     QuerySnapshot querySnapshot = await _documentReference.collection('Todos').where("deleted", isEqualTo: false).getDocuments();
     final _todos = querySnapshot.documents.map((snapshot) {
       return Todo(
         snapshot['title'], 
-        snapshot['category'], 
+        Category('', ''), //snapshot['category'], 
         id: snapshot.documentID, 
         completed: snapshot['completed'],
         note: snapshot['note'],
@@ -83,8 +106,6 @@ class TodosRepository {
         createdDate: snapshot['createdDate'] is Timestamp ? (snapshot['createdDate'] as Timestamp).toDate() : null
       );
     }).toList();
-    // print("todos => ");
-    // print(_todos);
     return _todos;
   }
 

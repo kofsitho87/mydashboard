@@ -25,7 +25,6 @@ class AddTodo extends TodosEvent {
 
 class UpdateTodo extends TodosEvent {
   final Todo updatedTodo;
-
   UpdateTodo(this.updatedTodo) : super([updatedTodo]);
 
   @override
@@ -49,4 +48,13 @@ class ClearCompleted extends TodosEvent {
 class ToggleAll extends TodosEvent {
   @override
   String toString() => 'ToggleAll';
+}
+
+
+class ChangeCategory extends TodosEvent {
+  final Category changeCategory;
+  ChangeCategory(this.changeCategory) : super([changeCategory]);
+
+  @override
+  String toString() => 'ChangeCategory';
 }

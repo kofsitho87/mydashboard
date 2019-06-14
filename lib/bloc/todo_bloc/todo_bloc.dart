@@ -28,7 +28,20 @@ class TodosBloc extends Bloc<TodosEvent, TodosState> {
       yield* _mapToggleAllToState();
     } else if (event is ClearCompleted) {
       yield* _mapClearCompletedToState();
+    } else if (event is ChangeCategory) {
+      yield* _mapChangeCategoryToState(event);
     } 
+  }
+
+  Stream<TodosState> _mapChangeCategoryToState(ChangeCategory event) async* {
+    try {
+      final todos = (currentState as TodosLoaded).todos;
+      final categories = (currentState as TodosLoaded).categories;
+
+      yield TodosLoaded(todos, categories, event.changeCategory);
+    } catch (e) {
+      yield TodosNotLoaded();
+    }
   }
 
   Stream<TodosState> _mapLoadTodosToState() async* {
@@ -46,15 +59,22 @@ class TodosBloc extends Bloc<TodosEvent, TodosState> {
     try {
       final todos = (currentState as TodosLoaded).todos;
       final categories = (currentState as TodosLoaded).categories;
+      final currentCategory = (currentState as TodosLoaded).currentCategory;
+      final addedCategory = categories.firstWhere((row) {
+        return row.uid == event.todo.category.uid;
+      });
+
       yield TodosLoading();
       final String todoId = await this.todosRepository.addTodo(event.todo.toMap());
       if(todoId != null) {
         final todo = event.todo;
         todo.id = todoId;
         final List<Todo> updatedTodos = List.from(todos)..add(todo);
+        addedCategory.todos.add(todo);
         yield TodosLoaded(
           updatedTodos,
-          categories
+          categories,
+          currentCategory
         );
       }else {
         throw('error');

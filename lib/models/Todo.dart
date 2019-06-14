@@ -1,7 +1,9 @@
+import './Category.dart';
+
 class Todo {
   String id;
   String title;
-  String category;
+  Category category;
 
   DateTime completeDate;
   DateTime createdDate;
@@ -17,11 +19,10 @@ class Todo {
       this.createdDate = createdDate ?? DateTime.now()
       ;
 
-  Todo copyWith({String id, String title, String category, bool completed}) {
+  Todo copyWith({String id, String title, bool completed}) {
     return Todo(
       title ?? this.title,
-      category ?? this.title,
-
+      category ?? this.category,
       id: id ?? this.id,
       completed: completed ?? this.completed,
       note: note ?? this.note,
@@ -31,7 +32,7 @@ class Todo {
   toMap(){
     Map<String, dynamic> data = {
       "title"       : this.title,
-      "category"    : this.category,
+      "category"    : this.category.ref,
       "completeDate": this.completeDate,
       "completed"   : this.completed,
       "note"        : this.note,

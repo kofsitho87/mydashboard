@@ -7,7 +7,8 @@ import '../resources/todos_repository.dart';
 import '../bloc/blocs.dart';
 
 import '../routes/index.dart';
-import './todos.dart';
+import './category.dart';
+//import './todos.dart';
 import './detail.dart';
 
 
@@ -20,11 +21,11 @@ class HomeApp extends StatefulWidget {
 }
 
 class _HomeApp extends State<HomeApp> {
-  TodosBloc todosBloc;
+  CategoriesBloc categoriesBloc;
   
   @override
   void initState() {
-    todosBloc = TodosBloc(todosRepository: TodosRepository(
+    categoriesBloc = CategoriesBloc(todosRepository: TodosRepository(
       fileStorage: const FileStorage(
         '__Todos__',
         getApplicationDocumentsDirectory,
@@ -35,27 +36,32 @@ class _HomeApp extends State<HomeApp> {
 
   @override
   void dispose() {
-    todosBloc.dispose();
+    categoriesBloc.dispose();
     super.dispose();
   }
 
   Widget get appView {
     return MaterialApp(
       theme: ThemeData(
-        primaryColor: Colors.blueGrey[800],
-        accentColor: Colors.lightGreen,
+        //primaryColor: Colors.blueGrey[800],
+        accentColor: Colors.white,
         primaryTextTheme: TextTheme(
-          title: TextStyle(color: Colors.white),
+          title: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 26),
           headline: TextStyle(color: Colors.white),
         )
       ),
-      initialRoute: Routes.todos,
+      initialRoute: Routes.category,
       routes: {
-        Routes.todos: (context) {
-          return TodoApp(onSignOut: () {
+        Routes.category: (context) {
+          return CategoryApp(onSignOut: () {
             widget.authBloc.dispatch(SignOutEvent());
           }, authBloc: widget.authBloc);
         },
+        // Routes.todos: (context) {
+        //   return TodoApp(onSignOut: () {
+        //     widget.authBloc.dispatch(SignOutEvent());
+        //   }, authBloc: widget.authBloc);
+        // },
         Routes.addTodo: (context) {
           return DetailApp(title: 'Add Todo');
         }
@@ -65,9 +71,9 @@ class _HomeApp extends State<HomeApp> {
   
   @override
   Widget build(BuildContext context) {
-    todosBloc.dispatch(LoadTodos());
+    categoriesBloc.dispatch(LoadCategories());
     return BlocProvider(
-      bloc: todosBloc,
+      bloc: categoriesBloc,
       child: appView,
     );
   }

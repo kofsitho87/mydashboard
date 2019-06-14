@@ -17,10 +17,11 @@ class TodosLoading extends TodosState {
 
 class TodosLoaded extends TodosState {
   //final SortingFilter activeFilter;
+  final Category currentCategory;
   final List<Category> categories;
   final List<Todo> todos;
 
-  TodosLoaded([this.todos = const [], this.categories = const []]) : super([todos, categories]);
+  TodosLoaded([this.todos = const [], this.categories = const [], this.currentCategory]) : super([todos, categories, currentCategory]);
 
   @override
   String toString() => 'TodosLoaded $categories';

@@ -12,9 +12,10 @@ import './detail.dart';
 
 
 class TodoApp extends StatelessWidget {
-  final void Function() onSignOut;
-  AuthBloc authBloc;
-  TodoApp({@required this.onSignOut, this.authBloc, Key key}) : super(key: key);
+  // final void Function() onSignOut;
+  // AuthBloc authBloc;
+  final Category category;
+  TodoApp(this.category, {Key key}) : super(key: key);
 
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   final _refreshIndicatorKey = GlobalKey<RefreshIndicatorState>();
@@ -36,32 +37,32 @@ class TodoApp extends StatelessWidget {
     _scaffoldKey.currentState.showSnackBar(sn);
   }
 
-  void _showLogoutDialog(context){
-    showDialog(
-      context: context,
-      builder: (BuildContext context){
-        return AlertDialog(
-          title: Text('로그아웃 하시겠습니까?'),
-          //content: Text('content'),
-          actions: <Widget>[
-            FlatButton(
-              child: Text('확인'),
-              onPressed: (){
-                onSignOut();
-                Navigator.of(context).pop();
-              },
-            ),
-            FlatButton(
-              child: Text('닫기'),
-              onPressed: (){
-                Navigator.of(context).pop();
-              },
-            )
-          ],
-        );
-      }
-    );
-  }
+  // void _showLogoutDialog(context){
+  //   showDialog(
+  //     context: context,
+  //     builder: (BuildContext context){
+  //       return AlertDialog(
+  //         title: Text('로그아웃 하시겠습니까?'),
+  //         //content: Text('content'),
+  //         actions: <Widget>[
+  //           FlatButton(
+  //             child: Text('확인'),
+  //             onPressed: (){
+  //               onSignOut();
+  //               Navigator.of(context).pop();
+  //             },
+  //           ),
+  //           FlatButton(
+  //             child: Text('닫기'),
+  //             onPressed: (){
+  //               Navigator.of(context).pop();
+  //             },
+  //           )
+  //         ],
+  //       );
+  //     }
+  //   );
+  // }
 
   void _showTodoBottomSheet(Todo todo, context){
     showModalBottomSheet(
@@ -331,8 +332,6 @@ class TodoApp extends StatelessWidget {
   Widget build(BuildContext context) {
     this.context = context;
     todosBloc = BlocProvider.of<TodosBloc>(context);
-    var userName = authBloc.currentState is Autenticated ? (authBloc.currentState as Autenticated).user.name : 'empty';
-    userName = userName == null ? 'empty Name' : userName;
     
     filteredTodosBloc = FilteredTodosBloc(
       todosBloc: todosBloc
@@ -340,24 +339,15 @@ class TodoApp extends StatelessWidget {
 
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: Theme.of(context).primaryColor,
+      //backgroundColor: Theme.of(context).primaryColor,
       appBar: AppBar(
-        elevation: 0,
-        bottomOpacity: 0,
-        //centerTitle: true,
-        title: Text(userName),
+        backgroundColor: Color.fromRGBO(209, 126, 242, 0.69),
+        title: Text(category.title),
+        centerTitle: false,
         actions: <Widget>[
-          // IconButton(
-          //   icon: Icon(Icons.filter),
-          //   onPressed: () => _showCategoryFilterList(context),
-          // ),
           IconButton(
             icon: Icon(Icons.filter_list),
             onPressed: () => _showFilterListBottomSheet(context),
-          ),
-          IconButton(
-            icon: Icon(Icons.exit_to_app),
-            onPressed: () => _showLogoutDialog(context),
           ),
         ],
       ),
@@ -368,26 +358,42 @@ class TodoApp extends StatelessWidget {
           Navigator.pushNamed(context, Routes.addTodo);
         },
       ),
-      body: BlocBuilder(
-        bloc: filteredTodosBloc,
-        builder: (BuildContext context, FilteredTodosState state) {
-          if(state is FilteredTodosLoaded) {
-            final todos = state.filteredTodos;
-
-            return RefreshIndicator(
-              key: _refreshIndicatorKey,
-              onRefresh: () async {
-                _refreshIndicatorKey.currentState.show();
-                todosBloc.dispatch(LoadTodos());
-                return null;
-              },
-              child: _easyListView(todos),
-            );
+      body: Container(
+        padding: EdgeInsets.only(top: 20),
+        decoration: BoxDecoration(
+          // Box decoration takes a gradient
+          gradient: LinearGradient(
+            // Where the linear gradient begins and ends
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            // Add one stop for each color. Stops should increase from 0 to 1
+            stops: [0, 0.7],
+            colors: [
+              Color.fromRGBO(209, 126, 242, 0.69),
+              Color.fromRGBO(129, 92, 206, 1)
+            ],
+          ),
+        ),
+        child: BlocBuilder(
+          bloc: filteredTodosBloc,
+          builder: (BuildContext context, FilteredTodosState state) {
+            if(state is FilteredTodosLoaded) {
+              final todos = state.filteredTodos;
+              return RefreshIndicator(
+                key: _refreshIndicatorKey,
+                onRefresh: () async {
+                  _refreshIndicatorKey.currentState.show();
+                  todosBloc.dispatch(LoadTodos());
+                  return null;
+                },
+                child: _easyListView(todos),
+              );
+            }
+            return Center(child: CircularProgressIndicator());
           }
-
-          return Center(child: CircularProgressIndicator());
-        }
-      ),
+        ),
+      )
+      
     );
   }
 }

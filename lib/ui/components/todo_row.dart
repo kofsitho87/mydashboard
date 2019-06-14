@@ -7,7 +7,7 @@ Widget TodoRowView(int index, Todo todo) {
   var icon;
   var color;
   var colorDepp;
-  switch(todo.category){
+  switch(todo.category.title){
     case "공부":
       color = Color1; 
       colorDepp = Color1Deep;
@@ -104,7 +104,7 @@ Widget TodoRowView(int index, Todo todo) {
               Icon(Icons.local_offer, color: color, size: 16),
               SizedBox(width: 5,),
               Text(
-                todo.category,
+                todo.category.title,
                 style: TextStyle(color: Colors.grey),
               ),
             ],
@@ -114,12 +114,28 @@ Widget TodoRowView(int index, Todo todo) {
     ),
   );
 
-  //var checked = false;
-  // final rightSide = Center(
-  //   child: Checkbox(
-  //     value: checked,
-  //   ),
-  // );
+  return ListTile(
+    //leading: Icon(Icons.list, color: Colors.white),
+    title: Text(todo.title, 
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)
+    ),
+    subtitle: Column(
+      children: <Widget>[
+        SizedBox(height: 8),
+        Row(
+          children: <Widget>[
+            Icon(Icons.access_time, color: Colors.white, size: 16),
+            SizedBox(width: 5),
+            Text('Today', style: TextStyle(color: Colors.white, fontSize: 16))
+          ],
+        )
+      ],
+    ),
+    trailing: Icon(todo.completed ? Icons.check_box : Icons.check_box_outline_blank, color: Colors.white, size: 30),
+    onTap: () => {},
+  );
 
   return Padding(
     padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),

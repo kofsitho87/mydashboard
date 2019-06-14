@@ -43,7 +43,7 @@ class _DetailApp extends State<DetailApp> {
   //String _todoTitle;
   DateTime _completeDate;
   String _category;
-  final categories = [];
+  List<Category> categories = [];
 
   final todoTitleController = TextEditingController();
   final noteConttroller = TextEditingController();
@@ -54,14 +54,19 @@ class _DetailApp extends State<DetailApp> {
     if(widget.todo != null){
       todoTitleController.text = widget.todo.title;
       _completeDate = widget.todo.completeDate;
-      _category = widget.todo.category;
+      _category = widget.todo.category.title;
       noteConttroller.text = widget.todo.note;
     }
     super.initState();
   }
 
   void addTodo(String title, String category, DateTime completeDate, String note) {
-    final todo = Todo(title, category, completeDate: completeDate, note: note);
+    //final cate = Category(category, '')
+    final cate = this.categories.firstWhere((row) {
+      return row.uid == category;
+    });
+
+    final todo = Todo(title, cate, completeDate: completeDate, note: note);
     todosBloc.dispatch(AddTodo(todo));
     Navigator.of(context).pop();
     // setState(() {
@@ -115,8 +120,8 @@ class _DetailApp extends State<DetailApp> {
       _scaffoldKey.currentState.showSnackBar(snackBar);
       return;
     }
-    
-    final todo = Todo(todoTitleController.text, _category, 
+    final cate = Category('', _category);
+    final todo = Todo(todoTitleController.text, cate, 
       completeDate: _completeDate == null ? null : _completeDate.add(Duration(hours: 23, minutes: 59, seconds: 59)), 
       id: widget.todo.id, 
       createdDate: widget.todo.createdDate,
@@ -203,13 +208,10 @@ class _DetailApp extends State<DetailApp> {
   }
 
   Widget get _categoryRow {
-    final categories = todosBloc.currentState is TodosLoaded ? (todosBloc.currentState as TodosLoaded).categories.map((Category c) {
-      return DropdownMenuItem(value: c.title, child: Text(c.title, style: TextStyle(color: Colors.grey)));
-    }).toList()
-    : null;
-    // final categories = this.categories.length > 0 ? this.categories.map((String value) {
-    //   return DropdownMenuItem(value: value, child: Text(value, style: TextStyle(color: Colors.grey)));
-    // }).toList() : [].toList();
+    final categories = this.categories.map((Category c) {
+      return DropdownMenuItem(value: c.uid, child: Text(c.title, style: TextStyle(color: Colors.grey)));
+    }).toList();
+    
     return Container(
       decoration: BoxDecoration(
         color: Color.fromRGBO(45, 58, 66, 1),
@@ -237,7 +239,7 @@ class _DetailApp extends State<DetailApp> {
               onChanged: (value) {
                 print(value);
                 setState(() {
-                    _category = value;
+                  _category = value;
                 });
               }
             ),
@@ -330,6 +332,8 @@ class _DetailApp extends State<DetailApp> {
 
   @override
   Widget build(BuildContext context) {
+    this.categories = todosBloc.currentState is TodosLoaded ? (todosBloc.currentState as TodosLoaded).categories : [];
+
     return BlocBuilder(
       bloc: todosBloc,
       builder: (BuildContext context, TodosState state) {
