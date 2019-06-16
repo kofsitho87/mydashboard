@@ -8,6 +8,7 @@ import '../bloc/blocs.dart';
 import '../models/models.dart';
 
 import 'components/show_modal.dart';
+import './add_category.dart';
 
 class CategoryApp extends StatelessWidget{
   final void Function() onSignOut;
@@ -32,7 +33,7 @@ class CategoryApp extends StatelessWidget{
   void _navigateToCategoryAdd(){
     Navigator.push(
       context,
-      ScaleRoute(widget: Home())
+      SlideRightRoute(widget: AddCategory())
     );
   }
 
