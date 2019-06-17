@@ -53,6 +53,7 @@ class _DetailApp extends State<DetailApp> {
 
   final todoTitleController = TextEditingController();
   final noteConttroller = TextEditingController();
+  final focus = FocusNode();
   FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin;
   KeyboardVisibilityNotification keyboardNoti;
 
@@ -232,7 +233,8 @@ class _DetailApp extends State<DetailApp> {
       padding: EdgeInsets.symmetric(horizontal: 20),
       margin: EdgeInsets.symmetric(vertical: 10),
       child: TextFormField(
-        autofocus: true,
+        focusNode: focus,
+        //autofocus: true,
         autocorrect: false,
         style: TextStyle(color: Colors.white),
         controller: todoTitleController,
@@ -459,8 +461,8 @@ class _DetailApp extends State<DetailApp> {
                 leading: IconButton(
                   icon: Icon(isShowKeyboard ? Icons.arrow_downward : Icons.arrow_back_ios),
                   onPressed: () {
-                    
-                    Navigator.of(context).pop();
+                    isShowKeyboard ? FocusScope.of(context).requestFocus(focus) 
+                    : Navigator.of(context).pop();
                   },
                 ),
                 backgroundColor: AppbarColor,
