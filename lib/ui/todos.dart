@@ -242,7 +242,7 @@ class TodoApp extends StatelessWidget {
         var completePercent = 0.0;
         if(state is FilteredTodosLoaded){
           final completeTodos = state.filteredTodos.where((todo) => todo.completed).length;
-          completePercent = completeTodos / state.filteredTodos.length;
+          completePercent = state.filteredTodos.length > 0 ? completeTodos / state.filteredTodos.length : 0;
         }
         return CircularPercentIndicator(
           radius: 160.0,
