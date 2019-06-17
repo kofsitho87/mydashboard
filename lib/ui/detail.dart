@@ -4,8 +4,12 @@ import 'package:intl/intl.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:modal_progress_hud/modal_progress_hud.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:keyboard_visibility/keyboard_visibility.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
-import '../bloc/todo_bloc/bloc.dart';
+import './components/background_container.dart';
+import './colors.dart';
+import '../bloc/blocs.dart';
 import '../models/models.dart';
 
 class DetailPageRoute extends CupertinoPageRoute {
@@ -13,14 +17,16 @@ class DetailPageRoute extends CupertinoPageRoute {
   Todo todo;
 
   DetailPageRoute({@required this.title, this.todo})
-      : super(builder: (BuildContext context) => DetailApp(title: title, todo: todo));
-
+      : super(
+            builder: (BuildContext context) =>
+                DetailApp(title: title, todo: todo));
 
   // OPTIONAL IF YOU WISH TO HAVE SOME EXTRA ANIMATION WHILE ROUTING
   @override
   Widget buildPage(BuildContext context, Animation<double> animation,
       Animation<double> secondaryAnimation) {
-    return FadeTransition(opacity: animation, child: DetailApp(title: title, todo: todo));
+    return FadeTransition(
+        opacity: animation, child: DetailApp(title: title, todo: todo));
   }
 }
 
@@ -38,51 +44,112 @@ class _DetailApp extends State<DetailApp> {
   _DetailApp({@required this.title});
 
   final _scaffoldKey = GlobalKey<ScaffoldState>();
-  TodosBloc todosBloc;
+  CategoriesBloc categoriesBloc;
 
-  //String _todoTitle;
   DateTime _completeDate;
   String _category;
   List<Category> categories = [];
+  bool isShowKeyboard = false;
 
   final todoTitleController = TextEditingController();
   final noteConttroller = TextEditingController();
+  FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin;
+  KeyboardVisibilityNotification keyboardNoti;
 
   @override
   void initState() {
-    todosBloc = BlocProvider.of<TodosBloc>(context);
-    if(widget.todo != null){
+    categoriesBloc = BlocProvider.of<CategoriesBloc>(context);
+    if (widget.todo != null) {
       todoTitleController.text = widget.todo.title;
       _completeDate = widget.todo.completeDate;
-      _category = widget.todo.category.title;
+      _category = widget.todo.category.uid;
       noteConttroller.text = widget.todo.note;
     }
+    this.categories = categoriesBloc.currentState is CategoriesLoaded
+        ? (categoriesBloc.currentState as CategoriesLoaded).categories
+        : [];
+
+    var android = AndroidInitializationSettings('@mipmap/ic_launher');
+    var ios = IOSInitializationSettings();
+    var initializationSettings = InitializationSettings(android, ios);
+    _flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+    _flutterLocalNotificationsPlugin.initialize(initializationSettings,
+        onSelectNotification: _onSelectNotofication);
+
     super.initState();
+
+    keyboardNoti = KeyboardVisibilityNotification();
+    keyboardNoti.addNewListener(
+      onChange: (bool visible) {
+        //print("visible $visible");
+        isShowKeyboard = visible;
+      },
+    );
   }
 
-  void addTodo(String title, String category, DateTime completeDate, String note) {
-    //final cate = Category(category, '')
+  @override
+  void dispose(){
+    keyboardNoti.dispose();
+    super.dispose();
+  }
+
+  Future _showNotificationAtTime(Todo todo) async {
+    var scheduledNotificationDateTime = DateTime.now().add(Duration(seconds: 3));
+    //final scheduledNotificationDateTime = todo.completeDate.subtract( Duration(seconds: 3) );
+
+    var androidPlatformChannelSpecifics = AndroidNotificationDetails(
+        'your channel id', 'your channel name', 'your channel description',
+        sound: 'slow_spring_board',
+        importance: Importance.Max,
+        priority: Priority.High);
+
+    var iosPlatformChannelSpecifics = IOSNotificationDetails(sound: 'slow_spring.board.aiff');
+    var platformChannelSpecifics = NotificationDetails(androidPlatformChannelSpecifics, iosPlatformChannelSpecifics);
+
+    
+    await _flutterLocalNotificationsPlugin.schedule(
+      1,
+      todo.title,
+      '',
+      scheduledNotificationDateTime,
+      platformChannelSpecifics,
+      payload: todo.title,
+    );
+  }
+
+  Future _onSelectNotofication(String payload) async {
+    //print(payload);
+    showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+              title: Text('Notification Payload'),
+              content: Text('Payload: $payload'),
+            ));
+  }
+
+  void addTodo(
+      String title, String categoryId, DateTime completeDate, String note) {
+    //final cate = Category(categoryId, '');
     final cate = this.categories.firstWhere((row) {
-      return row.uid == category;
+      return row.uid == categoryId;
     });
 
     final todo = Todo(title, cate, completeDate: completeDate, note: note);
-    todosBloc.dispatch(AddTodo(todo));
-    Navigator.of(context).pop();
-    // setState(() {
-    //   todoTitleController.text = '';
-    //   _category = null;
-    //   _completeDate = null;
-    // });
+    categoriesBloc.dispatch(AddTodo(cate, todo));
+
+    if( completeDate != null ){
+      _showNotificationAtTime(todo);
+    }
   }
 
-  void _showTimePicker(){
-    DatePicker.showDatePicker(context, 
+  void _showTimePicker() {
+    DatePicker.showDatePicker(
+      context,
       showTitleActions: true,
       currentTime: _completeDate == null ? DateTime.now() : _completeDate,
       theme: DatePickerTheme(
-        //backgroundColor: Theme.of(context).primaryColor
-      ),
+          //backgroundColor: Theme.of(context).primaryColor
+          ),
       locale: LocaleType.ko,
       minTime: DateTime.now(),
       onConfirm: (date) {
@@ -91,46 +158,69 @@ class _DetailApp extends State<DetailApp> {
           _completeDate = date;
         });
       },
-      // onChanged: (date) {
-      //   print('confirm $date');
-      // }
     );
   }
 
-  void _saveTodoAction(){
-    if( todoTitleController.text.length < 1 ){
+  void _showDateTimePicker() {
+    DatePicker.showDateTimePicker(
+      context,
+      showTitleActions: true,
+      currentTime: _completeDate == null ? DateTime.now() : _completeDate,
+      locale: LocaleType.ko,
+      //minTime: DateTime.now(),
+      onConfirm: (date) {
+        print('confirm $date');
+        setState(() {
+          _completeDate = date;
+        });
+      },
+    );
+  }
+
+  void _saveTodoAction() {
+    if (todoTitleController.text.length < 1) {
       final snackBar = SnackBar(content: Text('할일을 입력해주세요!!'));
       _scaffoldKey.currentState.showSnackBar(snackBar);
       return;
-    }else if ( _category == null ){
+    } else if (_category == null) {
       final snackBar = SnackBar(content: Text('카테고리를 선택해주세요!!'));
       _scaffoldKey.currentState.showSnackBar(snackBar);
       return;
     }
-    var completeDate = null;
-    if(_completeDate != null){
-      completeDate = _completeDate.add(Duration(hours: 23, minutes: 59, seconds: 59));
+    var completeDate;
+    if (_completeDate != null) {
+      completeDate =
+          _completeDate.add(Duration(hours: 23, minutes: 59, seconds: 59));
     }
-    this.addTodo(todoTitleController.text, _category, completeDate, noteConttroller.text);
+    this.addTodo(todoTitleController.text, _category, completeDate,
+        noteConttroller.text);
   }
 
-  void _updateTodoAction(){
-    if( todoTitleController.text.length < 1 ){
+  void _updateTodoAction() {
+    if (todoTitleController.text.length < 1) {
       final snackBar = SnackBar(content: Text('할일을 입력해주세요!!'));
       _scaffoldKey.currentState.showSnackBar(snackBar);
       return;
     }
-    final cate = Category('', _category);
-    final todo = Todo(todoTitleController.text, cate, 
-      completeDate: _completeDate == null ? null : _completeDate.add(Duration(hours: 23, minutes: 59, seconds: 59)), 
-      id: widget.todo.id, 
-      createdDate: widget.todo.createdDate,
-      completed: widget.todo.completed,
-      note: noteConttroller.text,
-    );
+    final prevCategory = widget.todo.category;
+    final cate = this.categories.firstWhere((cate) => cate.uid == _category);
+    final todo = widget.todo;
+    todo.category = cate;
+    todo.title = todoTitleController.text;
+    //todo.completeDate = _completeDate == null ? null : _completeDate.add(Duration(hours: 23, minutes: 59, seconds: 59));
+    todo.completeDate = _completeDate;
+    todo.note = noteConttroller.text;
     
-    todosBloc.dispatch(UpdateTodo(todo));
-    Navigator.of(context).pop();
+
+    categoriesBloc.dispatch(UpdatedTodo(prevCategory, todo));
+    
+    if( _completeDate != null ){
+      _showNotificationAtTime(todo);
+    }
+  }
+
+  void _deleteTodoAction() {
+    categoriesBloc.dispatch(DeleteTodo(widget.todo.category, widget.todo));
   }
 
   Widget get _todoTitleRow {
@@ -142,6 +232,8 @@ class _DetailApp extends State<DetailApp> {
       padding: EdgeInsets.symmetric(horizontal: 20),
       margin: EdgeInsets.symmetric(vertical: 10),
       child: TextFormField(
+        autofocus: true,
+        autocorrect: false,
         style: TextStyle(color: Colors.white),
         controller: todoTitleController,
         decoration: InputDecoration(
@@ -170,7 +262,9 @@ class _DetailApp extends State<DetailApp> {
   }
 
   Widget get _completeDateRow {
-    final _completeDateStr = _completeDate != null ? DateFormat('yyyy-MM-dd').format(_completeDate) : '';
+    final _completeDateStr = _completeDate != null
+        ? DateFormat('yyyy-MM-dd').format(_completeDate)
+        : '';
     return Container(
       decoration: BoxDecoration(
         color: Color.fromRGBO(45, 58, 66, 1),
@@ -188,30 +282,36 @@ class _DetailApp extends State<DetailApp> {
           Positioned(
             left: 42,
             top: 16,
-            child: Text('완료설정', style: TextStyle(fontSize: 16, color: Colors.white)),
+            child: Text('완료설정',
+                style: TextStyle(fontSize: 16, color: Colors.white)),
           ),
           Positioned(
             right: 20,
             top: 16,
-            child: Text(_completeDateStr, style: TextStyle(fontSize: 16, color: Colors.white)),
+            child: Text(_completeDateStr,
+                style: TextStyle(fontSize: 16, color: Colors.white)),
           ),
           MaterialButton(
-            //textTheme: ButtonTextTheme.primary,
-            textColor: Colors.white,
-            minWidth: double.infinity,
-            onPressed: _showTimePicker,
-            //child: Text('완료일 설정', style: TextStyle()),
-          )
+              //textTheme: ButtonTextTheme.primary,
+              textColor: Colors.white,
+              minWidth: double.infinity,
+              onPressed: _showDateTimePicker, //_showTimePicker,
+              //child: Text('완료일 설정', style: TextStyle()),
+              )
         ],
       ),
     );
   }
 
   Widget get _categoryRow {
-    final categories = this.categories.map((Category c) {
-      return DropdownMenuItem(value: c.uid, child: Text(c.title, style: TextStyle(color: Colors.grey)));
-    }).toList();
-    
+    final _categories = this.categories.length > 0
+        ? this.categories.map((Category c) {
+            return DropdownMenuItem(
+                value: c.uid,
+                child: Text(c.title, style: TextStyle(color: Colors.grey)));
+          }).toList()
+        : null;
+
     return Container(
       decoration: BoxDecoration(
         color: Color.fromRGBO(45, 58, 66, 1),
@@ -226,23 +326,23 @@ class _DetailApp extends State<DetailApp> {
           SizedBox(width: 20),
           Expanded(
             child: DropdownButtonFormField(
-              value: _category,
-              hint: Text('카테고리를 선택해주세요', style: TextStyle(color: Colors.white)),
-              decoration: const InputDecoration(
-                // filled: true,
-                // fillColor: Colors.black,
-                // hintStyle: TextStyle(color: Colors.white),
-                // labelStyle: TextStyle(color: Colors.white),
-                enabledBorder: UnderlineInputBorder(borderSide: BorderSide.none)
-              ),
-              items: categories,
-              onChanged: (value) {
-                print(value);
-                setState(() {
-                  _category = value;
-                });
-              }
-            ),
+                value: _category,
+                hint:
+                    Text('카테고리를 선택해주세요', style: TextStyle(color: Colors.white)),
+                decoration: const InputDecoration(
+                    // filled: true,
+                    // fillColor: Colors.black,
+                    // hintStyle: TextStyle(color: Colors.white),
+                    // labelStyle: TextStyle(color: Colors.white),
+                    enabledBorder:
+                        UnderlineInputBorder(borderSide: BorderSide.none)),
+                items: _categories,
+                onChanged: (value) {
+                  print(value);
+                  setState(() {
+                    _category = value;
+                  });
+                }),
           )
         ],
       ),
@@ -251,48 +351,47 @@ class _DetailApp extends State<DetailApp> {
 
   Widget get _completeRowView {
     return Container(
-      decoration: BoxDecoration(
-        color: Color.fromRGBO(45, 58, 66, 1),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      margin: EdgeInsets.symmetric(vertical: 10),
-      child: Row(
-        //mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: <Widget>[
-          Icon(Icons.check_box, color: Colors.white),
-          SizedBox(width: 20),
-          Text('완료하기', style: TextStyle(fontSize: 16, color: Colors.white)),
-        ],
-      )
-    );
+        decoration: BoxDecoration(
+          color: Color.fromRGBO(45, 58, 66, 1),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        margin: EdgeInsets.symmetric(vertical: 10),
+        child: Row(
+          //mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: <Widget>[
+            Icon(Icons.check_box, color: Colors.white),
+            SizedBox(width: 20),
+            Text('완료하기', style: TextStyle(fontSize: 16, color: Colors.white)),
+          ],
+        ));
   }
 
   Widget get _noteRowView {
     return Container(
-      decoration: BoxDecoration(
-        color: Color.fromRGBO(45, 58, 66, 1),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      padding: EdgeInsets.symmetric(horizontal: 20),
-      margin: EdgeInsets.symmetric(vertical: 10),
-      child: TextFormField(
-        controller: noteConttroller,
-        style: TextStyle(color: Colors.white),
-        //initialValue: widget.todo != null ? widget.todo.note : '',
-        //key: ArchSampleKeys.noteField,
-        maxLines: null,
-        //style: textTheme.subhead,
-        decoration: InputDecoration(
-          border: InputBorder.none,
-          icon: Icon(Icons.note, color: Colors.white),
-          //hintText: localizations.notesHint,
-          labelText: '노트',
-          labelStyle: TextStyle(color: Colors.white),
+        decoration: BoxDecoration(
+          color: Color.fromRGBO(45, 58, 66, 1),
+          borderRadius: BorderRadius.circular(8),
         ),
-        //onSaved: (value) => _note = value,
-      )
-    );
+        padding: EdgeInsets.symmetric(horizontal: 20),
+        margin: EdgeInsets.symmetric(vertical: 10),
+        child: TextFormField(
+          autocorrect: false,
+          controller: noteConttroller,
+          style: TextStyle(color: Colors.white),
+          //initialValue: widget.todo != null ? widget.todo.note : '',
+          //key: ArchSampleKeys.noteField,
+          maxLines: null,
+          //style: textTheme.subhead,
+          decoration: InputDecoration(
+            border: InputBorder.none,
+            icon: Icon(Icons.note, color: Colors.white),
+            //hintText: localizations.notesHint,
+            labelText: '노트',
+            labelStyle: TextStyle(color: Colors.white),
+          ),
+          //onSaved: (value) => _note = value,
+        ));
   }
 
   Widget get _formView {
@@ -301,7 +400,7 @@ class _DetailApp extends State<DetailApp> {
         padding: const EdgeInsets.only(
           left: 20,
           right: 20,
-          bottom: 10,
+          bottom: 50,
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -320,9 +419,11 @@ class _DetailApp extends State<DetailApp> {
               padding: EdgeInsets.symmetric(vertical: 12),
               minWidth: double.infinity,
               color: Theme.of(context).accentColor,
-              textColor: Colors.white,
-              child: Text(widget.todo == null ? '생성' : '업데이트', style: TextStyle(fontSize: 20)),
-              onPressed: widget.todo == null ? _saveTodoAction : _updateTodoAction,
+              //textColor: Colors.white,
+              child: Text(widget.todo == null ? '생성' : '업데이트',
+                  style: TextStyle(fontSize: 20)),
+              onPressed:
+                  widget.todo == null ? _saveTodoAction : _updateTodoAction,
             ),
           ],
         ),
@@ -332,28 +433,59 @@ class _DetailApp extends State<DetailApp> {
 
   @override
   Widget build(BuildContext context) {
-    this.categories = todosBloc.currentState is TodosLoaded ? (todosBloc.currentState as TodosLoaded).categories : [];
+    final deleteButton = IconButton(
+      icon: Icon(Icons.delete),
+      onPressed: () => _deleteTodoAction(),
+      //onPressed: () => _saveTodoAction(),
+    );
 
-    return BlocBuilder(
-      bloc: todosBloc,
-      builder: (BuildContext context, TodosState state) {
-        return ModalProgressHUD(
-          child: Scaffold(
-            key: _scaffoldKey,
-            backgroundColor: Theme.of(context).primaryColor,
-            appBar: AppBar(
-              elevation: 0,
-              bottomOpacity: 0,
-              centerTitle: true,
-              title: Text(title),
-            ),
-            body: SingleChildScrollView(
-              child: _formView,
-            ),
-          ),
-          inAsyncCall: !(state is TodosLoaded),
-        );
-      }
+    final actionIcons = widget.todo == null ? null : [deleteButton];
+
+    return BlocListener(
+      bloc: categoriesBloc,
+      listener: (context, state) {
+        if (state is SuccessAddTodo ||
+            state is SuccessUpdateTodo ||
+            state is SuccessDeleteTodo) {
+          Navigator.of(context).pop();
+        }
+      },
+      child: BlocBuilder(
+          bloc: categoriesBloc,
+          builder: (BuildContext context, CategoriesBlocState state) {
+            return Scaffold(
+              key: _scaffoldKey,
+              appBar: AppBar(
+                leading: IconButton(
+                  icon: Icon(isShowKeyboard ? Icons.arrow_downward : Icons.arrow_back_ios),
+                  onPressed: () {
+                    
+                    Navigator.of(context).pop();
+                  },
+                ),
+                backgroundColor: AppbarColor,
+                centerTitle: false,
+                title: Text(title),
+                actions: actionIcons,
+              ),
+              body: BackgroundContainerView(
+                  //child: _formView,
+                  child: ModalProgressHUD(
+                child: LayoutBuilder(builder:
+                    (BuildContext context, BoxConstraints constraints) {
+                  return SingleChildScrollView(
+                    child: ConstrainedBox(
+                      constraints: constraints.copyWith(
+                          minHeight: constraints.maxHeight,
+                          maxHeight: double.infinity),
+                      child: _formView,
+                    ),
+                  );
+                }),
+                inAsyncCall: state is TodosLoading,
+              )),
+            );
+          }),
     );
   }
 }

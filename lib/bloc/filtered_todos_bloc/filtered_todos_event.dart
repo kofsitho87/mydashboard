@@ -9,9 +9,10 @@ abstract class FilteredTodosEvent extends Equatable {
 }
 
 class UpdateFilter extends FilteredTodosEvent {
+  final Category currentCategory;
   final VisibilityFilter filter;
 
-  UpdateFilter(this.filter) : super([filter]);
+  UpdateFilter(this.currentCategory, this.filter) : super([currentCategory, filter]);
 
   @override
   String toString() => 'UpdateFilter { filter: $filter }';

@@ -15,6 +15,11 @@ class TodosRepository {
   FirebaseUser _user;
   DocumentReference _documentReference;
 
+  addCategory(Category category) async {
+    final doc = _documentReference.collection('Categories').document();
+    return doc.setData(category.toMap());
+  }
+
   Future<List<Category>> loadCategories() async {
     if(this._user == null) {
       this._user = await FirebaseAuth.instance.currentUser();
@@ -45,15 +50,11 @@ class TodosRepository {
       cate.todos = todos;
       categories.add(cate);
     };
-    //print(categories);
     return categories.toList();
-    // return querySnapshot.documents.map((snapshot) {
-    //   return Category(
-    //     snapshot.documentID,
-    //     snapshot['title'],
-    //   );
-    // }).toList();
   }
+
+
+
 
   Future<VisibilityFilter> loadTodosFilter() async {
     try {
@@ -109,7 +110,7 @@ class TodosRepository {
     return _todos;
   }
 
-  Future<String> addTodo(todo) async {
+  Future<String> addTodo(Todo todo) async {
     if(this._user == null) {
       this._user = await FirebaseAuth.instance.currentUser();
     }
@@ -118,7 +119,7 @@ class TodosRepository {
     var todoId;
 
     await doc
-    .setData(todo)
+    .setData(todo.toMap())
     .whenComplete(() {
       print('Document Added');
       todoId = doc.documentID;

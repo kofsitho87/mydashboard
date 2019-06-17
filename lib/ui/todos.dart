@@ -21,48 +21,22 @@ class TodoApp extends StatelessWidget {
   final _refreshIndicatorKey = GlobalKey<RefreshIndicatorState>();
 
   BuildContext context;
-  TodosBloc todosBloc;
+  CategoriesBloc categoriesBloc;
+  //TodosBloc todosBloc;
   FilteredTodosBloc filteredTodosBloc;
 
   void toggleCompleteTodo(Todo todo){
     todo.completed = !todo.completed;
-    todosBloc.dispatch(UpdateTodo(todo));
+    categoriesBloc.dispatch(UpdatedTodo(category, todo));
     final sn = SnackBar(content: Text("${todo.title} ${!todo.completed ? '미' : ''}완료됨"), duration: Duration(milliseconds: 200));
     _scaffoldKey.currentState.showSnackBar(sn);
   }
 
   void deleteTodo(Todo todo) {
-    todosBloc.dispatch(DeleteTodo(todo));
+    categoriesBloc.dispatch(DeleteTodo(category, todo));
     final sn = SnackBar(content: Text("${todo.title} dismissed"), duration: Duration(milliseconds: 200));
     _scaffoldKey.currentState.showSnackBar(sn);
   }
-
-  // void _showLogoutDialog(context){
-  //   showDialog(
-  //     context: context,
-  //     builder: (BuildContext context){
-  //       return AlertDialog(
-  //         title: Text('로그아웃 하시겠습니까?'),
-  //         //content: Text('content'),
-  //         actions: <Widget>[
-  //           FlatButton(
-  //             child: Text('확인'),
-  //             onPressed: (){
-  //               onSignOut();
-  //               Navigator.of(context).pop();
-  //             },
-  //           ),
-  //           FlatButton(
-  //             child: Text('닫기'),
-  //             onPressed: (){
-  //               Navigator.of(context).pop();
-  //             },
-  //           )
-  //         ],
-  //       );
-  //     }
-  //   );
-  // }
 
   void _showTodoBottomSheet(Todo todo, context){
     showModalBottomSheet(
@@ -84,9 +58,9 @@ class TodoApp extends StatelessWidget {
                 title: Text('수정하기'),
                 onTap: () {
                   Navigator.of(context).pop();
-                  final page = DetailPageRoute(title: todo.title, todo: todo);
-                  Navigator.of(context).push(page);
-                  //Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => DetailApp(title: todo.title, todo: todo)));
+                  //final page = DetailPageRoute(title: todo.title, todo: todo);
+                  final page = MaterialPageRoute(builder: (context) => DetailApp(title: todo.title, todo: todo));
+                  Navigator.of(bc).push(page);
                 },
               ),
               ListTile(
@@ -106,7 +80,7 @@ class TodoApp extends StatelessWidget {
 
   void _showFilterListBottomSheet(context){
     final enabled = (filteredTodosBloc.currentState is FilteredTodosLoaded) ? 
-      (todosBloc.currentState as TodosLoaded).todos.length > 1 : 
+      category.todos.length > 1 : 
       false;
     final activeFilter = (filteredTodosBloc.currentState as FilteredTodosLoaded).activeFilter;
     showModalBottomSheet(
@@ -121,7 +95,7 @@ class TodoApp extends StatelessWidget {
                 title: Text('전체보기'),
                 onTap: () {
                   //filteredTodosBloc.dispatch(SortingTodos(SortingFilter.basic));
-                  filteredTodosBloc.dispatch(UpdateFilter(VisibilityFilter.all));
+                  filteredTodosBloc.dispatch(UpdateFilter(category, VisibilityFilter.all));
                   Navigator.of(context).pop();
                 },
               ),
@@ -130,7 +104,7 @@ class TodoApp extends StatelessWidget {
                 enabled: enabled && activeFilter != VisibilityFilter.active,
                 title: Text('미완료만 보기'),
                 onTap: () {
-                  filteredTodosBloc.dispatch(UpdateFilter(VisibilityFilter.active));
+                  filteredTodosBloc.dispatch(UpdateFilter(category, VisibilityFilter.active));
                   //filteredTodosBloc.dispatch(VisibilityTodos(VisibilityFilter.active));
                   Navigator.of(context).pop();
                 },
@@ -140,29 +114,29 @@ class TodoApp extends StatelessWidget {
                 enabled: enabled && activeFilter != VisibilityFilter.completed,
                 title: Text('완료만 보기'),
                 onTap: () {
-                  filteredTodosBloc.dispatch(UpdateFilter(VisibilityFilter.completed));
+                  filteredTodosBloc.dispatch(UpdateFilter(category, VisibilityFilter.completed));
                   //filteredTodosBloc.dispatch(VisibilityTodos(VisibilityFilter.completed));
                   Navigator.of(context).pop();
                 },
               ),
-              ListTile(
-                enabled: enabled,
-                //leading: Icon(Icons.filter_hdr),
-                title: Text('완료 시간순으로 정렬'),
-                onTap: () {
-                  filteredTodosBloc.dispatch(SortingTodos(SortingFilter.completeDate));
-                  Navigator.of(context).pop();
-                },
-              ),
-              ListTile(
-                enabled: enabled,
-                //leading: Icon(Icons.navigate_next),
-                title: Text('미완료/완료로 정렬'),
-                onTap: () {
-                  filteredTodosBloc.dispatch(SortingTodos(SortingFilter.activeCompleted));
-                  Navigator.of(context).pop();
-                },
-              )
+              // ListTile(
+              //   enabled: enabled,
+              //   //leading: Icon(Icons.filter_hdr),
+              //   title: Text('완료 시간순으로 정렬'),
+              //   onTap: () {
+              //     filteredTodosBloc.dispatch(SortingTodos(SortingFilter.completeDate));
+              //     Navigator.of(context).pop();
+              //   },
+              // ),
+              // ListTile(
+              //   enabled: enabled,
+              //   //leading: Icon(Icons.navigate_next),
+              //   title: Text('미완료/완료로 정렬'),
+              //   onTap: () {
+              //     filteredTodosBloc.dispatch(SortingTodos(SortingFilter.activeCompleted));
+              //     Navigator.of(context).pop();
+              //   },
+              // )
             ],
           ),
         );
@@ -171,109 +145,104 @@ class TodoApp extends StatelessWidget {
   }
 
   void _showCategoryFilterList(context) {
-    final list = (todosBloc.currentState as TodosLoaded).categories.map((row) {
-      final content = ListTile(
-        title: Text(row.title),
-        onTap: () {
-          // filteredTodosBloc.dispatch(SortingTodos(SortingFilter.activeCompleted));
-          Navigator.of(context).pop();
-        },
-      );
+    // final list = (todosBloc.currentState as TodosLoaded).categories.map((row) {
+    //   final content = ListTile(
+    //     title: Text(row.title),
+    //     onTap: () {
+    //       // filteredTodosBloc.dispatch(SortingTodos(SortingFilter.activeCompleted));
+    //       Navigator.of(context).pop();
+    //     },
+    //   );
 
-      return Column(
-        children: <Widget>[
-          content,
-          Divider()
-        ],
-      );
-    }).toList();
-    showModalBottomSheet(
-      context: context,
-      builder: (BuildContext bc) {
-        return Container(
-          padding: EdgeInsets.only(bottom: 10),
-          //padding: EdgeInsets.symmetric(vertical: 10),
-          child: Wrap(
-            children: list,
-          ),
-        );
-        // return ListView(
-        //   children: list,
-        // );
-      }
-    );
+    //   return Column(
+    //     children: <Widget>[
+    //       content,
+    //       Divider()
+    //     ],
+    //   );
+    // }).toList();
+    // showModalBottomSheet(
+    //   context: context,
+    //   builder: (BuildContext bc) {
+    //     return Container(
+    //       padding: EdgeInsets.only(bottom: 10),
+    //       child: Wrap(
+    //         children: list,
+    //       ),
+    //     );
+    //   }
+    // );
   }
 
-  Future<bool> _confirmDismissAction(direction) async {
-    return false;
-    return direction == DismissDirection.endToStart;
-  }
+  // Future<bool> _confirmDismissAction(direction) async {
+  //   return false;
+  //   return direction == DismissDirection.endToStart;
+  // }
 
-  Widget _listView(todos) {
-    return ListView.builder(
-      itemCount: todos.length,
-      itemBuilder: (context, index) {
-        final todo = todos[index];
-        return GestureDetector(
-          child: AnimatedOpacity(
-            key: Key(index.toString()),
-            opacity: todo.completed ? 0.4 : 1,
-            duration: Duration(milliseconds: 200),
-            child: TodoRowView(index, todo),
-          ),
-          onTapUp: (_) => _showTodoBottomSheet(todo, context),
-        );
+  // Widget _listView(todos) {
+  //   return ListView.builder(
+  //     itemCount: todos.length,
+  //     itemBuilder: (context, index) {
+  //       final todo = todos[index];
+  //       return GestureDetector(
+  //         child: AnimatedOpacity(
+  //           key: Key(index.toString()),
+  //           opacity: todo.completed ? 0.4 : 1,
+  //           duration: Duration(milliseconds: 200),
+  //           child: TodoRowView(todo),
+  //         ),
+  //         onTapUp: (_) => _showTodoBottomSheet(todo, context),
+  //       );
 
-        // return Dismissible(
-        //   key: Key(index.toString()),
-        //   confirmDismiss: _confirmDismissAction,
-        //   direction: DismissDirection.endToStart,
-        //   background: Container(
-        //     margin: EdgeInsets.symmetric(vertical: 5),
-        //     padding: EdgeInsets.only(left: 20.0),
-        //     color: Colors.blue,
-        //     child: Align(
-        //       alignment: Alignment.centerLeft,
-        //       child: Icon(Icons.delete, color: Colors.white)
-        //     ),
-        //   ),
-        //   secondaryBackground: Container(
-        //     margin: EdgeInsets.symmetric(vertical: 5),
-        //     padding: EdgeInsets.only(right: 20.0),
-        //     color: Colors.red,
-        //     child: Align(
-        //       alignment: Alignment.centerRight,
-        //       child: Icon(Icons.delete, color: Colors.white)
-        //     ),
-        //   ),
-        //   onDismissed: (DismissDirection direction) {
-        //     if(direction == DismissDirection.endToStart){
-        //       deleteTodo(todo);
-        //     }
-        //   },
-        //   child: GestureDetector(
-        //     child: AnimatedOpacity(
-        //       key: Key(index.toString()),
-        //       opacity: todo.completed ? 0.4 : 1,
-        //       duration: Duration(milliseconds: 200),
-        //       child: TodoRowView(index, todo),
-        //     ),
-        //     onTapUp: (_) => _showTodoBottomSheet(todo, context),
-        //   ),
-        // );
-        
-      }
-    );
-  }
+  //       // return Dismissible(
+  //       //   key: Key(index.toString()),
+  //       //   confirmDismiss: _confirmDismissAction,
+  //       //   direction: DismissDirection.endToStart,
+  //       //   background: Container(
+  //       //     margin: EdgeInsets.symmetric(vertical: 5),
+  //       //     padding: EdgeInsets.only(left: 20.0),
+  //       //     color: Colors.blue,
+  //       //     child: Align(
+  //       //       alignment: Alignment.centerLeft,
+  //       //       child: Icon(Icons.delete, color: Colors.white)
+  //       //     ),
+  //       //   ),
+  //       //   secondaryBackground: Container(
+  //       //     margin: EdgeInsets.symmetric(vertical: 5),
+  //       //     padding: EdgeInsets.only(right: 20.0),
+  //       //     color: Colors.red,
+  //       //     child: Align(
+  //       //       alignment: Alignment.centerRight,
+  //       //       child: Icon(Icons.delete, color: Colors.white)
+  //       //     ),
+  //       //   ),
+  //       //   onDismissed: (DismissDirection direction) {
+  //       //     if(direction == DismissDirection.endToStart){
+  //       //       deleteTodo(todo);
+  //       //     }
+  //       //   },
+  //       //   child: GestureDetector(
+  //       //     child: AnimatedOpacity(
+  //       //       key: Key(index.toString()),
+  //       //       opacity: todo.completed ? 0.4 : 1,
+  //       //       duration: Duration(milliseconds: 200),
+  //       //       child: TodoRowView(index, todo),
+  //       //     ),
+  //       //     onTapUp: (_) => _showTodoBottomSheet(todo, context),
+  //       //   ),
+  //       // );
+  //     }
+  //   );
+  // }
 
   Widget get progressView{
     return BlocBuilder(
-      bloc: todosBloc,
-      builder: (BuildContext context, TodosState state) {
+      bloc: filteredTodosBloc,
+      builder: (BuildContext context, FilteredTodosState state) {
         var completePercent = 0.0;
-        if(state is TodosLoaded && state.todos.length > 1){
-          final completeTodos = state.todos.where((todo) => todo.completed).toList().length;
-          completePercent = completeTodos / state.todos.length;
+        if(state is FilteredTodosLoaded){
+          final completeTodos = state.filteredTodos.where((todo) => todo.completed).length;
+          completePercent = completeTodos / state.filteredTodos.length;
         }
         return CircularPercentIndicator(
           radius: 160.0,
@@ -316,9 +285,13 @@ class TodoApp extends StatelessWidget {
             key: Key(index.toString()),
             opacity: todo.completed ? 0.4 : 1,
             duration: Duration(milliseconds: 200),
-            child: TodoRowView(index, todo),
+            child: TodoRowView(todo, onToggleComplteTodoAction: toggleCompleteTodo),
           ),
-          onTapUp: (_) => _showTodoBottomSheet(todo, context),
+          //onTapUp: (_) => _showTodoBottomSheet(todo, context),
+          onTapUp: (_) {
+            final page = MaterialPageRoute(builder: (context) => DetailApp(title: todo.title, todo: todo));
+            Navigator.of(context).push(page);
+          },
         );
       },                   // ItemBuilder with data index
       //dividerBuilder: dividerBuilder,             // Custom Divider Builder
@@ -331,11 +304,8 @@ class TodoApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     this.context = context;
-    todosBloc = BlocProvider.of<TodosBloc>(context);
-    
-    filteredTodosBloc = FilteredTodosBloc(
-      todosBloc: todosBloc
-    );
+    categoriesBloc = BlocProvider.of<CategoriesBloc>(context);
+    filteredTodosBloc = FilteredTodosBloc(categoriesBloc, category);
 
     return Scaffold(
       key: _scaffoldKey,
@@ -383,7 +353,7 @@ class TodoApp extends StatelessWidget {
                 key: _refreshIndicatorKey,
                 onRefresh: () async {
                   _refreshIndicatorKey.currentState.show();
-                  todosBloc.dispatch(LoadTodos());
+                  //todosBloc.dispatch(LoadTodos());
                   return null;
                 },
                 child: _easyListView(todos),

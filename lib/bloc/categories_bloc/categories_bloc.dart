@@ -18,6 +18,14 @@ class CategoriesBloc extends Bloc<CategoriesBlocEvent, CategoriesBlocState> {
   ) async* {
     if (event is LoadCategories) {
       yield* _mapLoadCategoriesToState();
+    }else if (event is AddCategory){
+      yield* _mapAddCategoryToState(event);
+    }else if (event is AddTodo){
+      yield* _mapAddTodoToState(event);
+    }else if (event is UpdatedTodo){
+      yield* _mapUpdateTodoToState(event);
+    }else if (event is DeleteTodo){
+      yield* _mapDeleteTodoToState(event);
     }
   }
 
@@ -26,8 +34,116 @@ class CategoriesBloc extends Bloc<CategoriesBlocEvent, CategoriesBlocState> {
       final categories = await this.todosRepository.loadCategories();
       yield CategoriesLoaded(categories);
     } catch (e) {
-      //print("todos not loaded why??? ${e.toString()}");
       yield FailCategoriesLoaded(e.toString());
     }
   }
+
+  Stream<CategoriesBlocState> _mapAddCategoryToState(AddCategory event) async* {
+    try {
+      final categories = (currentState as CategoriesLoaded).categories;
+      await this.todosRepository.addCategory(event.category);
+      yield CategoriesLoading();
+      final List<Category> updatedCategories = List.from(categories)..add(event.category);
+      yield SuccessAddCategory();
+      yield CategoriesLoaded(updatedCategories);
+    } catch (e) {
+      yield FailCategoriesLoaded(e.toString());
+    }
+  }
+
+  Stream<CategoriesBlocState> _mapAddTodoToState(AddTodo event) async* {
+    try {
+      final categories = (currentState as CategoriesLoaded).categories;
+      yield TodosLoading();
+      final todoId = await this.todosRepository.addTodo(event.todo);
+      final todo = event.todo;
+      todo.id = todoId;
+      event.currentCategory.todos.add(todo);
+
+      
+      // final List<Category> updatedCategories = List.from(categories)..add(event.category);
+      yield SuccessAddTodo();
+      yield CategoriesLoaded(categories);
+    } catch (e) {
+      yield FailCategoriesLoaded(e.toString());
+    }
+  }
+
+  Stream<CategoriesBlocState> _mapUpdateTodoToState(UpdatedTodo event) async* {
+    
+    try {
+      final categories = (currentState as CategoriesLoaded).categories;
+
+      yield TodosLoading();
+      await this.todosRepository.updateTodo(event.updatedTodo);
+
+      
+
+      if(event.updatedTodo.category == event.currentCategory){
+        final List<Todo> updatedTodos = event.currentCategory.todos.map((todo) {
+          return todo.id == event.updatedTodo.id ? event.updatedTodo : todo;
+        })
+        .where((todo) => todo.deleted == false)
+        .toList();
+        event.currentCategory.todos = updatedTodos;
+
+        final List<Category> updatedCategories = categories.map((cate) {
+          return cate.uid == event.currentCategory.uid ? event.currentCategory : cate;
+        }).toList(); 
+
+        yield SuccessUpdateTodo();
+        yield CategoriesLoaded(updatedCategories);
+      }else {
+        final List<Todo> prevCategoryupdatedTodos = event.currentCategory.todos.where((todo) {
+          return todo.id != event.updatedTodo.id;
+        }).toList();
+        event.currentCategory.todos = prevCategoryupdatedTodos;
+
+        final currentCategory = categories.firstWhere((cate) => cate.uid == event.updatedTodo.category.uid);
+        currentCategory.todos.add( event.updatedTodo );
+
+        final List<Category> updatedCategories = categories.map((cate) {
+          return cate.uid == event.currentCategory.uid ? event.currentCategory : (cate.uid == currentCategory.uid ? currentCategory : cate);
+        }).toList(); 
+
+        yield SuccessUpdateTodo();
+        yield CategoriesLoaded(updatedCategories);
+      }
+      
+    } catch (e) {
+      yield FailCategoriesLoaded(e.toString());
+    }
+  }
+
+  Stream<CategoriesBlocState> _mapDeleteTodoToState(DeleteTodo event) async* {
+    // event.todo.deleted = true;
+    // yield* _mapUpdateTodoToState(UpdatedTodo(event.currentCategory, event.todo));
+
+    try {
+      final categories = (currentState as CategoriesLoaded).categories;
+      yield TodosLoading();
+      
+      final todo = event.todo;
+      // todo.deleted = true;
+      await this.todosRepository.deleteTodo(todo);
+      final updatedTodos = //(currentState as TodosLoaded)
+        event.currentCategory.todos
+        .where((todo) => todo.id != event.todo.id)
+        .toList();
+
+      event.currentCategory.todos = updatedTodos;
+
+      final List<Category> updatedCategories = categories.map((cate) {
+        return cate.uid == event.currentCategory.uid ? event.currentCategory : cate;
+      }).toList();
+
+      yield SuccessDeleteTodo();
+      yield CategoriesLoaded(updatedCategories);
+
+    }catch(e){
+      yield FailCategoriesLoaded(e.toString());
+    }
+  }
+
 }
+

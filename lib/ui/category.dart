@@ -24,16 +24,22 @@ class CategoryApp extends StatelessWidget{
 
   void _navigateToTodos(Category category){
     //todosBloc.dispatch( ChangeCategory(category) );
-    // Navigator.push(
-    //   context,
-    //   MaterialPageRoute(builder: (context) => TodoApp(category))
-    // );
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => TodoApp(category))
+    );
   }
 
   void _navigateToCategoryAdd(){
-    Navigator.push(
-      context,
-      SlideRightRoute(widget: AddCategory())
+    // Navigator.push(
+    //   context,
+    //   SlideRightRoute(widget: AddCategoryApp())
+    // );
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return AddCategoryApp();
+      }
     );
   }
 
@@ -72,7 +78,7 @@ class CategoryApp extends StatelessWidget{
         return ListTile(
           leading: Icon(Icons.list, color: Colors.white),
           title: Text(category.title, style: TextStyle(color: Colors.white, fontSize: 22)),
-          trailing: Text("${category.todos.length}", style: TextStyle(color: Colors.white)),
+          trailing: Text("${category.todos.where((todo) => !todo.completed).length}", style: TextStyle(color: Colors.white)),
           onTap: () => _navigateToTodos(category),
         );
       },
@@ -111,7 +117,7 @@ class CategoryApp extends StatelessWidget{
       ),
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.add),
-        onPressed: () => {},
+        onPressed: () => Navigator.pushNamed(context, Routes.addTodo),
       ),
       body: Container(
         padding: EdgeInsets.only(top: 20),
@@ -132,10 +138,15 @@ class CategoryApp extends StatelessWidget{
         child: BlocBuilder(
           bloc: categoriesBloc,
           builder: (BuildContext context, CategoriesBlocState state) {
-            if(state is CategoriesLoaded){
+            //var categories = [].toList();
+            if(state is CategoriesLoading){
+              return Center(child: CircularProgressIndicator());
+            }else if (state is CategoriesLoaded){
+              //categories = state.categories;
               return listView(state.categories);
             }
-            return Center(child: CircularProgressIndicator());
+            
+            return listView([]);
           },
         ),
       ),

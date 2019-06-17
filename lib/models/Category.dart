@@ -10,4 +10,13 @@ class Category {
   List<Todo> todos;
 
   Category(this.uid, this.title, {this.ref, this.color, this.todos = const []});
+
+  toMap(){
+    Map<String, dynamic> data = {
+      "title": this.title,
+      "color": this.color,
+      //"ref"  : this.ref,
+    };
+    return data; 
+  }
 }

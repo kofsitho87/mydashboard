@@ -43,12 +43,16 @@ class _HomeApp extends State<HomeApp> {
   Widget get appView {
     return MaterialApp(
       theme: ThemeData(
-        primaryColor: Colors.white,
+        //primaryColor: Colors.white,
         //primarySwatch: Colors.white,
         accentColor: Colors.white,
         primaryTextTheme: TextTheme(
-          title: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 26),
-          headline: TextStyle(color: Colors.white),
+          title: TextStyle(
+            //color: Colors.white, 
+            fontWeight: FontWeight.bold, 
+            fontSize: 26
+          ),
+          //headline: TextStyle(color: Colors.white),
         )
       ),
       initialRoute: Routes.category,

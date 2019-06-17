@@ -1,36 +1,37 @@
 import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:meta/meta.dart';
+import 'package:mydashboard/bloc/blocs.dart';
 import './bloc.dart';
 
 import '../../models/models.dart';
 import '../todo_bloc/bloc.dart';
 
 class FilteredTodosBloc extends Bloc<FilteredTodosEvent, FilteredTodosState> {
-  final TodosBloc todosBloc;
-  StreamSubscription todosSubscription;
+  final CategoriesBloc categoriesBloc;
+  final Category currentCategory;
+  StreamSubscription categoriesSubscription;
 
-  FilteredTodosBloc({@required this.todosBloc}) {
-    todosSubscription = todosBloc.state.listen((state) {
-      // if (state is TodosLoaded) {
-      //   final todos = (todosBloc.currentState as TodosLoaded).todos;
-      //   dispatch(UpdateTodos(todos));
-      // }
-      if( todosBloc.currentState is TodosLoaded ){
-        if( (todosBloc.currentState as TodosLoaded).currentCategory != null ) {
-          final todos = (todosBloc.currentState as TodosLoaded).currentCategory.todos;
-          dispatch(UpdateTodos(todos));
-        }
+  FilteredTodosBloc(this.categoriesBloc, this.currentCategory) {
+    categoriesSubscription = categoriesBloc.state.listen((state) {
+      if( categoriesBloc.currentState is CategoriesLoaded ){
+        final todos = currentCategory.todos; 
+        dispatch(UpdateTodos(todos));
+        // if( (categoriesBloc.currentState as CategoriesLoaded).currentCategory != null ) {
+        //   final todos = (todosBloc.currentState as TodosLoaded).currentCategory.todos;
+        //   dispatch(UpdateTodos(todos));
+        // }
       }
     });
   }
 
   @override
   FilteredTodosState get initialState {
-    if( todosBloc.currentState is TodosLoaded ){
-      if( (todosBloc.currentState as TodosLoaded).currentCategory != null ) {
-        return FilteredTodosLoaded((todosBloc.currentState as TodosLoaded).currentCategory.todos, VisibilityFilter.all);
-      }
+    if( categoriesBloc.currentState is CategoriesLoaded ){
+      // if( (todosBloc.currentState as TodosLoaded).currentCategory != null ) {
+      //   return FilteredTodosLoaded((todosBloc.currentState as TodosLoaded).currentCategory.todos, VisibilityFilter.all);
+      // }
+      return FilteredTodosLoaded(currentCategory.todos, VisibilityFilter.all);
     }
     return FilteredTodosLoading();
   }
@@ -53,11 +54,11 @@ class FilteredTodosBloc extends Bloc<FilteredTodosEvent, FilteredTodosState> {
   Stream<FilteredTodosState> _mapUpdateFilterToState(
     UpdateFilter event,
   ) async* {
-    if (todosBloc.currentState is TodosLoaded) {
-      await this.todosBloc.todosRepository.saveTodosFilter(event.filter);
+    if (categoriesBloc.currentState is CategoriesLoaded) {
+      await this.categoriesBloc.todosRepository.saveTodosFilter(event.filter);
       yield FilteredTodosLoaded(
         _mapTodosToFilteredTodos(
-          (todosBloc.currentState as TodosLoaded).todos,
+          event.currentCategory.todos,
           event.filter,
         ),
         event.filter
@@ -68,18 +69,11 @@ class FilteredTodosBloc extends Bloc<FilteredTodosEvent, FilteredTodosState> {
   Stream<FilteredTodosState> _mapTodosUpdatedToState(
     UpdateTodos event,
   ) async* {
-    
     // final visibilityFilter = currentState is FilteredTodosLoaded 
     //   ? (currentState as FilteredTodosLoaded).activeFilter
     //   : VisibilityFilter.all;
-    final visibilityFilter = await this.todosBloc.todosRepository.loadTodosFilter();
     
-    // var _todos = [].toList();
-    // if( (todosBloc.currentState as TodosLoaded).currentCategory != null ) {
-    //   _todos = (todosBloc.currentState as TodosLoaded).currentCategory.todos;
-    // }
-
-    
+    final visibilityFilter = await this.categoriesBloc.todosRepository.loadTodosFilter();
     yield FilteredTodosLoading();
 
     final todos = _mapTodosToFilteredTodos(
@@ -103,50 +97,50 @@ class FilteredTodosBloc extends Bloc<FilteredTodosEvent, FilteredTodosState> {
   }
 
   Stream<FilteredTodosState> _mapSoltingTodosToState(SortingTodos event) async* {
-    final todos = (todosBloc.currentState as TodosLoaded).todos;
-    yield FilteredTodosLoading();
+    // final todos = (todosBloc.currentState as TodosLoaded).todos;
+    // yield FilteredTodosLoading();
 
-    if (event.filter == SortingFilter.basic) {
-      todos.sort((a, b) {
-        return a.createdDate.compareTo(b.createdDate);
-      });
-    }else if( event.filter == SortingFilter.completeDate ){
-      final defaultDate = DateTime.parse('2999-01-01 00:00:00Z');
-      todos.sort((a, b) {
-        // if( a.completeDate == null && b.completeDate == null ) {
-        //   return 1;
-        // }
-        final currentCompleteDate = a.completeDate == null ? defaultDate : a.completeDate;
-        final nextCompleteDate = b.completeDate == null ? defaultDate : b.completeDate;
-        return currentCompleteDate.compareTo(nextCompleteDate);
-      });
-    }else if(event.filter == SortingFilter.activeCompleted) {
-      todos.sort((a, b) {
-        return a.completed ? 1 : 0;
-      });
-    }
-    yield FilteredTodosLoaded(todos, VisibilityFilter.all);
+    // if (event.filter == SortingFilter.basic) {
+    //   todos.sort((a, b) {
+    //     return a.createdDate.compareTo(b.createdDate);
+    //   });
+    // }else if( event.filter == SortingFilter.completeDate ){
+    //   final defaultDate = DateTime.parse('2999-01-01 00:00:00Z');
+    //   todos.sort((a, b) {
+    //     // if( a.completeDate == null && b.completeDate == null ) {
+    //     //   return 1;
+    //     // }
+    //     final currentCompleteDate = a.completeDate == null ? defaultDate : a.completeDate;
+    //     final nextCompleteDate = b.completeDate == null ? defaultDate : b.completeDate;
+    //     return currentCompleteDate.compareTo(nextCompleteDate);
+    //   });
+    // }else if(event.filter == SortingFilter.activeCompleted) {
+    //   todos.sort((a, b) {
+    //     return a.completed ? 1 : 0;
+    //   });
+    // }
+    // yield FilteredTodosLoaded(todos, VisibilityFilter.all);
   }
 
   Stream<FilteredTodosState> _mapVisiblilityTodosToState(VisibilityTodos event) async* {
-    var todos = (todosBloc.currentState as TodosLoaded).todos;
-    yield FilteredTodosLoading();
+    // var todos = (todosBloc.currentState as TodosLoaded).todos;
+    // yield FilteredTodosLoading();
 
-    if (event.filter == VisibilityFilter.completed) {
-      todos = todos.where((todo) {
-        return todo.completed;
-      }).toList();
-    }else if( event.filter == VisibilityFilter.active ){
-      todos = todos.where((todo) {
-        return todo.completed == false;
-      }).toList();
-    }
-    yield FilteredTodosLoaded(todos, event.filter);
+    // if (event.filter == VisibilityFilter.completed) {
+    //   todos = todos.where((todo) {
+    //     return todo.completed;
+    //   }).toList();
+    // }else if( event.filter == VisibilityFilter.active ){
+    //   todos = todos.where((todo) {
+    //     return todo.completed == false;
+    //   }).toList();
+    // }
+    // yield FilteredTodosLoaded(todos, event.filter);
   }
 
-  @override
-  void dispose() {
-    todosSubscription.cancel();
-    super.dispose();
-  }
+  // @override
+  // void dispose() {
+  //   todosSubscription.cancel();
+  //   super.dispose();
+  // }
 }

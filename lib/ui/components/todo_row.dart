@@ -3,13 +3,63 @@ import 'package:flutter/material.dart';
 import '../colors.dart';
 import '../../models/Todo.dart';
 
-Widget TodoRowView(int index, Todo todo) {
+class TodoRowView extends StatelessWidget {
+  final Todo todo;
+  final Function onToggleComplteTodoAction;
+  TodoRowView(this.todo, {@required this.onToggleComplteTodoAction});
+
+  @override
+  Widget build(BuildContext context) {
+    var remainingDays = '기한없음';
+    var monthDateString = '';
+    if (todo.completeDate != null) {
+      final inDays = todo.completeDate.difference(DateTime.now()).inDays;
+      remainingDays = inDays == 0 ? 'Today' : inDays.toString() + '일 남음';
+      monthDateString = todo.completeDate.month.toString() +
+          '월 ' +
+          todo.completeDate.day.toString() +
+          '일';
+    }
+
+    return ListTile(
+      //leading: Icon(Icons.list, color: Colors.white),
+      title: Text(todo.title,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+              color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
+      subtitle: Column(
+        children: <Widget>[
+          SizedBox(height: 8),
+          Row(
+            children: <Widget>[
+              Icon(Icons.access_time, color: Colors.white, size: 16),
+              SizedBox(width: 5),
+              Text(remainingDays,
+                  style: TextStyle(color: Colors.white, fontSize: 16))
+            ],
+          )
+        ],
+      ),
+      trailing: IconButton(
+        icon: Icon(
+            todo.completed ? Icons.check_box : Icons.check_box_outline_blank,
+            color: Colors.white,
+            size: 30),
+        onPressed: () => onToggleComplteTodoAction(todo),
+      ),
+      
+    );
+  }
+}
+
+Widget _TodoRowView(int index, Todo todo) {
   var icon;
   var color;
   var colorDepp;
-  switch(todo.category.title){
+  switch (todo.category.title) {
     case "공부":
-      color = Color1; 
+      color = Color1;
       colorDepp = Color1Deep;
       icon = Icons.book;
       break;
@@ -24,7 +74,7 @@ Widget TodoRowView(int index, Todo todo) {
       icon = Icons.refresh;
       break;
     case "일":
-      color = Color4; 
+      color = Color4;
       colorDepp = Color4Deep;
       icon = Icons.work;
       break;
@@ -32,10 +82,13 @@ Widget TodoRowView(int index, Todo todo) {
 
   var remainingDays = '기한없음';
   var monthDateString = '';
-  if( todo.completeDate != null ){
+  if (todo.completeDate != null) {
     final inDays = todo.completeDate.difference(DateTime.now()).inDays;
     remainingDays = inDays == 0 ? 'Today' : inDays.toString() + '일 남음';
-    monthDateString = todo.completeDate.month.toString() + '월 ' + todo.completeDate.day.toString() + '일';
+    monthDateString = todo.completeDate.month.toString() +
+        '월 ' +
+        todo.completeDate.day.toString() +
+        '일';
   }
   final leftSide = Container(
     height: 100,
@@ -86,10 +139,9 @@ Widget TodoRowView(int index, Todo todo) {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               Text(todo.title,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)
-              ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               SizedBox(height: 5),
               Text(
                 todo.note,
@@ -102,7 +154,9 @@ Widget TodoRowView(int index, Todo todo) {
           Row(
             children: <Widget>[
               Icon(Icons.local_offer, color: color, size: 16),
-              SizedBox(width: 5,),
+              SizedBox(
+                width: 5,
+              ),
               Text(
                 todo.category.title,
                 style: TextStyle(color: Colors.grey),
@@ -116,11 +170,11 @@ Widget TodoRowView(int index, Todo todo) {
 
   return ListTile(
     //leading: Icon(Icons.list, color: Colors.white),
-    title: Text(todo.title, 
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
-      style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)
-    ),
+    title: Text(todo.title,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+            color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
     subtitle: Column(
       children: <Widget>[
         SizedBox(height: 8),
@@ -128,12 +182,19 @@ Widget TodoRowView(int index, Todo todo) {
           children: <Widget>[
             Icon(Icons.access_time, color: Colors.white, size: 16),
             SizedBox(width: 5),
-            Text('Today', style: TextStyle(color: Colors.white, fontSize: 16))
+            Text(remainingDays,
+                style: TextStyle(color: Colors.white, fontSize: 16))
           ],
         )
       ],
     ),
-    trailing: Icon(todo.completed ? Icons.check_box : Icons.check_box_outline_blank, color: Colors.white, size: 30),
+    trailing: IconButton(
+      icon: Icon(
+          todo.completed ? Icons.check_box : Icons.check_box_outline_blank,
+          color: Colors.white,
+          size: 30),
+      onPressed: () => {},
+    ),
     onTap: () => {},
   );
 

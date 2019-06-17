@@ -79,20 +79,13 @@ class AuthRepository {
       GoogleSignInAuthentication googleAuth = await googleUser.authentication;
       final credential = GoogleAuthProvider.getCredential(idToken: googleAuth.idToken, accessToken: googleAuth.accessToken);
       final FirebaseUser user = await _auth.signInWithCredential(credential);
-      
 
       final userModel = User(user.uid, user.displayName, user.email, provider: SnsProvider.google);
-
       final QuerySnapshot snapShot = await Firestore.instance.collection("USERS").where('uid', isEqualTo: user.uid).getDocuments();
       if( snapShot.documents.length < 1 ) {
         saveUserToFirebase(userModel);
       }
-      
-      // this.saveUser(userModel).then((file) {
-      //   print('파일 저장 성공!!! ${file.toString()}');
-      // });
       await this.saveUser(userModel);
-
       return userModel;
     } catch (e) {
       throw e;

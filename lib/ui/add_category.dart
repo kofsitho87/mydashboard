@@ -1,24 +1,42 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
-class AddCategory extends StatelessWidget {
+import '../bloc/blocs.dart';
+import '../models/models.dart';
+
+class AddCategoryApp extends StatelessWidget {
+  CategoriesBloc category_bloc;
   BuildContext context;
+
+  final categoryController = TextEditingController();
+
+  void _addCategoryEvent() {
+    final category = Category('', categoryController.text);
+    this.category_bloc.dispatch(AddCategory(category));
+  }
 
   Widget get formView {
     return Form(
       child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 10),
+        padding: EdgeInsets.symmetric(horizontal: 20),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: <Widget>[
             TextFormField(
+              autofocus: true,
+              controller: categoryController,
+              onEditingComplete: () {
+                if( categoryController.text.length > 0 ){
+                  _addCategoryEvent();
+                }
+                //Navigator.of(context).pop();
+              },
+              autocorrect: false,
               decoration: InputDecoration(
-                  labelText: '카테고리 이름',
-                  labelStyle: TextStyle(color: Colors.white)),
+                labelText: '카테고리 이름',
+                //labelStyle: TextStyle(color: Colors.white)
+              ),
             ),
-            MaterialButton(
-              child: Text('추가'),
-              onPressed: () => {},
-            )
           ],
         ),
       ),
@@ -29,17 +47,25 @@ class AddCategory extends StatelessWidget {
     return Container(
       padding: EdgeInsets.only(
         top: 20,
-        //left: 20,
+        left: 20,
         right: 20,
+        bottom: 20,
       ),
       child: Row(
         children: <Widget>[
-          IconButton(
-            icon: Icon(Icons.close, color: Colors.white),
-            onPressed: () => Navigator.of(context).pop(),
-          ),
+          // IconButton(
+          //   icon: Icon(
+          //     Icons.close,
+          //     //color: Colors.white
+          //   ),
+          //   onPressed: () => Navigator.of(context).pop(),
+          // ),
           Text('카테고리 추가',
-              style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: Colors.white))
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                //color: Colors.white
+              ))
         ],
       ),
     );
@@ -48,27 +74,14 @@ class AddCategory extends StatelessWidget {
   Widget get bodyView {
     return Column(
       children: <Widget>[
-        //headerView, 
+        headerView,
         formView
       ],
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    this.context = context;
-
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Color.fromRGBO(209, 126, 242, 0.69),
-        centerTitle: false,
-        title: Text('카테고리 추가'),
-        leading: IconButton(
-          icon: Icon(Icons.close),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-      ),
-        body: Container(
+  Widget get containerView {
+    return Container(
       padding: EdgeInsets.only(top: 20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -83,6 +96,32 @@ class AddCategory extends StatelessWidget {
           ],
         ),
       ),
+      child: bodyView,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    this.context = context;
+    this.category_bloc = BlocProvider.of<CategoriesBloc>(context);
+
+    return Scaffold(
+        // appBar: AppBar(
+        //   backgroundColor: Color.fromRGBO(209, 126, 242, 0.69),
+        //   centerTitle: false,
+        //   title: Text('카테고리 추가'),
+        //   leading: IconButton(
+        //     icon: Icon(Icons.close),
+        //     onPressed: () => Navigator.of(context).pop(),
+        //   ),
+        // ),
+        body: BlocListener(
+      bloc: category_bloc,
+      listener: (listenerContext, state) {
+        if (state is SuccessAddCategory) {
+          Navigator.of(context).pop();
+        }
+      },
       child: bodyView,
     ));
   }

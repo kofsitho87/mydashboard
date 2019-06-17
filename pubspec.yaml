@@ -44,7 +44,8 @@ dependencies:
   intl: ^0.15.8
   percent_indicator: "^2.1.0"
   easy_listview:
-  #  flutter_local_notifications:
+  keyboard_visibility:
+  flutter_local_notifications:
 
 dev_dependencies:
   flutter_test:
