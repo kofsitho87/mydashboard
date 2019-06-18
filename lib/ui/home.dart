@@ -68,7 +68,7 @@ class _HomeApp extends State<HomeApp> {
         //   }, authBloc: widget.authBloc);
         // },
         Routes.addTodo: (context) {
-          return DetailApp(title: 'Add Todo');
+          return DetailApp(title: 'Todo 생성');
         }
       },
     );

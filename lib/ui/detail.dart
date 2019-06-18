@@ -32,8 +32,9 @@ class DetailPageRoute extends CupertinoPageRoute {
 
 class DetailApp extends StatefulWidget {
   final String title;
+  final Category currentCategory;
   Todo todo;
-  DetailApp({@required this.title, this.todo});
+  DetailApp({@required this.title, this.currentCategory, this.todo});
 
   @override
   State<StatefulWidget> createState() => _DetailApp(title: title);
@@ -54,6 +55,8 @@ class _DetailApp extends State<DetailApp> {
   final todoTitleController = TextEditingController();
   final noteConttroller = TextEditingController();
   final focus = FocusNode();
+  final focus2 = FocusNode();
+  FocusNode currentFocus;
   FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin;
   KeyboardVisibilityNotification keyboardNoti;
 
@@ -65,6 +68,8 @@ class _DetailApp extends State<DetailApp> {
       _completeDate = widget.todo.completeDate;
       _category = widget.todo.category.uid;
       noteConttroller.text = widget.todo.note;
+    }else if(widget.currentCategory != null){
+      _category = widget.currentCategory.uid;
     }
     this.categories = categoriesBloc.currentState is CategoriesLoaded
         ? (categoriesBloc.currentState as CategoriesLoaded).categories
@@ -77,6 +82,7 @@ class _DetailApp extends State<DetailApp> {
     _flutterLocalNotificationsPlugin.initialize(initializationSettings,
         onSelectNotification: _onSelectNotofication);
 
+    //FocusScope.of(context).requestFocus(focus);
     super.initState();
 
     keyboardNoti = KeyboardVisibilityNotification();
@@ -89,13 +95,16 @@ class _DetailApp extends State<DetailApp> {
   }
 
   @override
-  void dispose(){
+  void dispose() {
+    focus.dispose();
+    focus2.dispose();
     keyboardNoti.dispose();
     super.dispose();
   }
 
   Future _showNotificationAtTime(Todo todo) async {
-    var scheduledNotificationDateTime = DateTime.now().add(Duration(seconds: 3));
+    var scheduledNotificationDateTime =
+        DateTime.now().add(Duration(seconds: 3));
     //final scheduledNotificationDateTime = todo.completeDate.subtract( Duration(seconds: 3) );
 
     var androidPlatformChannelSpecifics = AndroidNotificationDetails(
@@ -104,10 +113,11 @@ class _DetailApp extends State<DetailApp> {
         importance: Importance.Max,
         priority: Priority.High);
 
-    var iosPlatformChannelSpecifics = IOSNotificationDetails(sound: 'slow_spring.board.aiff');
-    var platformChannelSpecifics = NotificationDetails(androidPlatformChannelSpecifics, iosPlatformChannelSpecifics);
+    var iosPlatformChannelSpecifics =
+        IOSNotificationDetails(sound: 'slow_spring.board.aiff');
+    var platformChannelSpecifics = NotificationDetails(
+        androidPlatformChannelSpecifics, iosPlatformChannelSpecifics);
 
-    
     await _flutterLocalNotificationsPlugin.schedule(
       1,
       todo.title,
@@ -138,9 +148,9 @@ class _DetailApp extends State<DetailApp> {
     final todo = Todo(title, cate, completeDate: completeDate, note: note);
     categoriesBloc.dispatch(AddTodo(cate, todo));
 
-    if( completeDate != null ){
-      _showNotificationAtTime(todo);
-    }
+    // if( completeDate != null ){
+    //   _showNotificationAtTime(todo);
+    // }
   }
 
   void _showTimePicker() {
@@ -208,16 +218,17 @@ class _DetailApp extends State<DetailApp> {
     final todo = widget.todo;
     todo.category = cate;
     todo.title = todoTitleController.text;
-    //todo.completeDate = _completeDate == null ? null : _completeDate.add(Duration(hours: 23, minutes: 59, seconds: 59));
-    todo.completeDate = _completeDate;
+    todo.completeDate = _completeDate == null
+        ? null
+        : _completeDate.add(Duration(hours: 23, minutes: 59, seconds: 59));
+    //todo.completeDate = _completeDate;
     todo.note = noteConttroller.text;
-    
 
     categoriesBloc.dispatch(UpdatedTodo(prevCategory, todo));
-    
-    if( _completeDate != null ){
-      _showNotificationAtTime(todo);
-    }
+
+    // if( _completeDate != null ){
+    //   _showNotificationAtTime(todo);
+    // }
   }
 
   void _deleteTodoAction() {
@@ -294,12 +305,12 @@ class _DetailApp extends State<DetailApp> {
                 style: TextStyle(fontSize: 16, color: Colors.white)),
           ),
           MaterialButton(
-              //textTheme: ButtonTextTheme.primary,
-              textColor: Colors.white,
-              minWidth: double.infinity,
-              onPressed: _showDateTimePicker, //_showTimePicker,
-              //child: Text('완료일 설정', style: TextStyle()),
-              )
+            //textTheme: ButtonTextTheme.primary,
+            textColor: Colors.white,
+            minWidth: double.infinity,
+            onPressed: _showTimePicker,
+            //child: Text('완료일 설정', style: TextStyle()),
+          )
         ],
       ),
     );
@@ -310,7 +321,11 @@ class _DetailApp extends State<DetailApp> {
         ? this.categories.map((Category c) {
             return DropdownMenuItem(
                 value: c.uid,
-                child: Text(c.title, style: TextStyle(color: Colors.grey)));
+                child: Text(c.title, 
+                  style: TextStyle(color: Colors.grey),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+            ));
           }).toList()
         : null;
 
@@ -378,6 +393,7 @@ class _DetailApp extends State<DetailApp> {
         padding: EdgeInsets.symmetric(horizontal: 20),
         margin: EdgeInsets.symmetric(vertical: 10),
         child: TextFormField(
+          focusNode: focus2,
           autocorrect: false,
           controller: noteConttroller,
           style: TextStyle(color: Colors.white),
@@ -443,6 +459,8 @@ class _DetailApp extends State<DetailApp> {
 
     final actionIcons = widget.todo == null ? null : [deleteButton];
 
+    //FocusScope.of(context).requestFocus(focus);
+
     return BlocListener(
       bloc: categoriesBloc,
       listener: (context, state) {
@@ -459,10 +477,16 @@ class _DetailApp extends State<DetailApp> {
               key: _scaffoldKey,
               appBar: AppBar(
                 leading: IconButton(
-                  icon: Icon(isShowKeyboard ? Icons.arrow_downward : Icons.arrow_back_ios),
+                  icon: Icon(isShowKeyboard
+                      ? Icons.arrow_downward
+                      : Icons.arrow_back_ios),
                   onPressed: () {
-                    isShowKeyboard ? FocusScope.of(context).requestFocus(focus) 
-                    : Navigator.of(context).pop();
+                    if (isShowKeyboard) {
+                      focus.unfocus();
+                      focus.unfocus();
+                    } else {
+                      Navigator.of(context).pop();
+                    }
                   },
                 ),
                 backgroundColor: AppbarColor,

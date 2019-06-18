@@ -30,7 +30,7 @@ class CategoryApp extends StatelessWidget{
     );
   }
 
-  void _navigateToCategoryAdd(){
+  void _navigateToCategoryAdd({Category category}){
     // Navigator.push(
     //   context,
     //   SlideRightRoute(widget: AddCategoryApp())
@@ -38,9 +38,13 @@ class CategoryApp extends StatelessWidget{
     showModalBottomSheet(
       context: context,
       builder: (BuildContext context) {
-        return AddCategoryApp();
+        return AddCategoryApp(currentCategory: category);
       }
     );
+  }
+
+  void _deleteCategory(Category category){
+    categoriesBloc.dispatch(DeleteCategory(category));
   }
 
   void _showLogoutDialog(context){
@@ -70,16 +74,72 @@ class CategoryApp extends StatelessWidget{
     );
   }
 
+  void _showBottomMenu(Category category){
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return Container(
+          child: Wrap(
+            children: <Widget>[
+              ListTile(
+                leading: Icon(Icons.navigate_next),
+                title: Text('수정하기'),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  _navigateToCategoryAdd(category: category);
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.delete),
+                title: Text('삭제하기'),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  _deleteCategory(category);
+                },
+              )
+            ],
+          ),
+        );
+      }
+    );
+  }
+
+  Future<bool> _confirmDismissAction(direction, Category category) async {
+    //_deleteCategory(category);
+    //return false;
+  }
+
   Widget listView(List<Category> categories) {
     return EasyListView(
       itemCount: categories.length,
       itemBuilder: (context, index){
         final category = categories[index];
+        // return Dismissible(
+        //   key: Key(category.uid),
+        //   //confirmDismiss: (direction) => _confirmDismissAction(direction, category),
+        //   direction: DismissDirection.endToStart,
+        //   background: Container(
+        //     padding: EdgeInsets.symmetric(horizontal: 20),
+        //     child: Align(
+        //       alignment: Alignment.centerRight,
+        //       child: Icon(Icons.delete, color: Colors.white),
+        //     ),
+        //   ),
+        //   onDismissed: (DismissDirection direction) => _deleteCategory(category),
+        //   child: ListTile(
+        //     leading: Icon(Icons.list, color: Colors.white),
+        //     title: Text(category.title, style: TextStyle(color: Colors.white, fontSize: 22)),
+        //     trailing: Text("${category.todos.where((todo) => !todo.completed).length}", style: TextStyle(color: Colors.white)),
+        //     onTap: () => _navigateToTodos(category),
+        //   ),
+        // );
+
         return ListTile(
           leading: Icon(Icons.list, color: Colors.white),
           title: Text(category.title, style: TextStyle(color: Colors.white, fontSize: 22)),
           trailing: Text("${category.todos.where((todo) => !todo.completed).length}", style: TextStyle(color: Colors.white)),
           onTap: () => _navigateToTodos(category),
+          onLongPress: () => _showBottomMenu(category),
         );
       },
       footerBuilder: (context) {

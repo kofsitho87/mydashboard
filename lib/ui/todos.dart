@@ -79,9 +79,9 @@ class TodoApp extends StatelessWidget {
   }
 
   void _showFilterListBottomSheet(context){
-    final enabled = (filteredTodosBloc.currentState is FilteredTodosLoaded) ? 
-      category.todos.length > 1 : 
-      false;
+    // final enabled = (filteredTodosBloc.currentState is FilteredTodosLoaded) ? 
+    //   category.todos.length > 1 : 
+    //   false;
     final activeFilter = (filteredTodosBloc.currentState as FilteredTodosLoaded).activeFilter;
     showModalBottomSheet(
       context: context,
@@ -91,7 +91,7 @@ class TodoApp extends StatelessWidget {
             children: <Widget>[
               ListTile(
                 leading: activeFilter == VisibilityFilter.all ? Icon(Icons.check_circle) : null,
-                enabled: enabled && activeFilter != VisibilityFilter.all,
+                enabled: activeFilter != VisibilityFilter.all,
                 title: Text('전체보기'),
                 onTap: () {
                   //filteredTodosBloc.dispatch(SortingTodos(SortingFilter.basic));
@@ -101,7 +101,7 @@ class TodoApp extends StatelessWidget {
               ),
               ListTile(
                 leading: activeFilter == VisibilityFilter.active ? Icon(Icons.check_circle) : null,
-                enabled: enabled && activeFilter != VisibilityFilter.active,
+                enabled: activeFilter != VisibilityFilter.active,
                 title: Text('미완료만 보기'),
                 onTap: () {
                   filteredTodosBloc.dispatch(UpdateFilter(category, VisibilityFilter.active));
@@ -111,7 +111,7 @@ class TodoApp extends StatelessWidget {
               ),
               ListTile(
                 leading: activeFilter == VisibilityFilter.completed ? Icon(Icons.check_circle) : null,
-                enabled: enabled && activeFilter != VisibilityFilter.completed,
+                enabled: activeFilter != VisibilityFilter.completed,
                 title: Text('완료만 보기'),
                 onTap: () {
                   filteredTodosBloc.dispatch(UpdateFilter(category, VisibilityFilter.completed));
@@ -236,37 +236,63 @@ class TodoApp extends StatelessWidget {
   // }
 
   Widget get progressView{
-    return BlocBuilder(
-      bloc: filteredTodosBloc,
-      builder: (BuildContext context, FilteredTodosState state) {
-        var completePercent = 0.0;
-        if(state is FilteredTodosLoaded){
-          final completeTodos = state.filteredTodos.where((todo) => todo.completed).length;
-          completePercent = state.filteredTodos.length > 0 ? completeTodos / state.filteredTodos.length : 0;
-        }
-        return CircularPercentIndicator(
-          radius: 160.0,
-          lineWidth: 14.0,
-          percent: completePercent,
-          center: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Text("${(completePercent * 100).round()}%", style: TextStyle(fontSize: 30, color: Colors.white)),
-              SizedBox(height: 5),
-              Text('완료율', style: TextStyle(fontSize: 16, color: Colors.white))
-            ],
-          ),
-          progressColor: Theme.of(context).accentColor,
-          animation: true,
-          animationDuration: 400,
-          circularStrokeCap: CircularStrokeCap.round,
-        );
-      },
+    final completeTodos = this.category.todos.where((todo) => todo.completed).length;
+    final completePercent = this.category.todos.length > 0 ? completeTodos / this.category.todos.length : 0;
+    return CircularPercentIndicator(
+      radius: 160.0,
+      lineWidth: 14.0,
+      percent: completePercent,
+      center: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Text("${(completePercent * 100).round()}%", style: TextStyle(fontSize: 30, color: Colors.white)),
+          SizedBox(height: 5),
+          Text('완료율', style: TextStyle(fontSize: 16, color: Colors.white))
+        ],
+      ),
+      progressColor: Theme.of(context).accentColor,
+      animation: true,
+      animationDuration: 400,
+      circularStrokeCap: CircularStrokeCap.round,
     );
+    // return BlocBuilder(
+    //   bloc: filteredTodosBloc,
+    //   //bloc: categoriesBloc,
+    //   builder: (BuildContext context, FilteredTodosState state) {
+    //     var completePercent = 0.0;
+    //     // if(state is FilteredTodosLoaded){
+    //     //   final completeTodos = state.filteredTodos.where((todo) => todo.completed).length;
+    //     //   completePercent = state.filteredTodos.length > 0 ? completeTodos / state.filteredTodos.length : 0;
+    //     // }
+    //     final completeTodos = this.category.todos.where((todo) => todo.completed).length;
+    //     completePercent = this.category.todos.length > 0 ? completeTodos / this.category.todos.length : 0;
+    //     return CircularPercentIndicator(
+    //       radius: 160.0,
+    //       lineWidth: 14.0,
+    //       percent: completePercent,
+    //       center: Column(
+    //         mainAxisAlignment: MainAxisAlignment.center,
+    //         children: <Widget>[
+    //           Text("${(completePercent * 100).round()}%", style: TextStyle(fontSize: 30, color: Colors.white)),
+    //           SizedBox(height: 5),
+    //           Text('완료율', style: TextStyle(fontSize: 16, color: Colors.white))
+    //         ],
+    //       ),
+    //       progressColor: Theme.of(context).accentColor,
+    //       animation: true,
+    //       animationDuration: 400,
+    //       circularStrokeCap: CircularStrokeCap.round,
+    //     );
+    //   },
+    // );
   }
 
   Widget _easyListView(todos){
     return EasyListView(
+      padding: EdgeInsets.only(
+        top:20,
+        bottom: 70
+      ),
       //headerSliverBuilder: (BuildContext context, ),   // SliverAppBar...etc.
       headerBuilder: (BuildContext context){
         return Container(
@@ -325,11 +351,13 @@ class TodoApp extends StatelessWidget {
         tooltip: 'add todo',
         child: Icon(Icons.add),
         onPressed: () {
-          Navigator.pushNamed(context, Routes.addTodo);
+          final page = MaterialPageRoute(builder: (context) => DetailApp(title: 'Todo 추거', currentCategory: category));
+          Navigator.of(context).push(page);
+          //Navigator.pushNamed(context, Routes.addTodo);
         },
       ),
       body: Container(
-        padding: EdgeInsets.only(top: 20),
+        //padding: EdgeInsets.only(top: 20),
         decoration: BoxDecoration(
           // Box decoration takes a gradient
           gradient: LinearGradient(

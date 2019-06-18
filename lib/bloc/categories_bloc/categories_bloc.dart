@@ -26,6 +26,10 @@ class CategoriesBloc extends Bloc<CategoriesBlocEvent, CategoriesBlocState> {
       yield* _mapUpdateTodoToState(event);
     }else if (event is DeleteTodo){
       yield* _mapDeleteTodoToState(event);
+    }else if (event is DeleteCategory){
+      yield* _mapDeleteCategoryToState(event);
+    }else if (event is UpdatedCategory){
+      yield* _mapUpdateCategoryToState(event);
     }
   }
 
@@ -41,9 +45,25 @@ class CategoriesBloc extends Bloc<CategoriesBlocEvent, CategoriesBlocState> {
   Stream<CategoriesBlocState> _mapAddCategoryToState(AddCategory event) async* {
     try {
       final categories = (currentState as CategoriesLoaded).categories;
-      await this.todosRepository.addCategory(event.category);
+      final categoryId = await this.todosRepository.addCategory(event.category);
+      event.category.uid = categoryId;
       yield CategoriesLoading();
       final List<Category> updatedCategories = List.from(categories)..add(event.category);
+      yield SuccessAddCategory();
+      yield CategoriesLoaded(updatedCategories);
+    } catch (e) {
+      yield FailCategoriesLoaded(e.toString());
+    }
+  }
+
+  Stream<CategoriesBlocState> _mapUpdateCategoryToState(UpdatedCategory event) async* {
+    try {
+      final categories = (currentState as CategoriesLoaded).categories;
+      await this.todosRepository.updateCategory(event.category);
+      yield CategoriesLoading();
+      final updatedCategories = categories.map((cate) {
+        return cate.uid == event.category.uid ? event.category : cate;
+      }).toList();
       yield SuccessAddCategory();
       yield CategoriesLoaded(updatedCategories);
     } catch (e) {
@@ -138,6 +158,27 @@ class CategoriesBloc extends Bloc<CategoriesBlocEvent, CategoriesBlocState> {
       }).toList();
 
       yield SuccessDeleteTodo();
+      yield CategoriesLoaded(updatedCategories);
+
+    }catch(e){
+      yield FailCategoriesLoaded(e.toString());
+    }
+  }
+
+  Stream<CategoriesBlocState> _mapDeleteCategoryToState(DeleteCategory event) async* {
+    // event.todo.deleted = true;
+    // yield* _mapUpdateTodoToState(UpdatedTodo(event.currentCategory, event.todo));
+
+    try {
+      final categories = (currentState as CategoriesLoaded).categories;
+      yield CategoriesLoading();
+      
+      event.category.todos.forEach((todo) async {
+        await this.todosRepository.deleteTodo(todo);
+      });
+      await this.todosRepository.deleteCategory(event.category);
+
+      final updatedCategories = categories.where((cate) => cate.uid != event.category.uid).toList();
       yield CategoriesLoaded(updatedCategories);
 
     }catch(e){

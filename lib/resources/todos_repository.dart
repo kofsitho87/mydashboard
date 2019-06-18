@@ -15,9 +15,28 @@ class TodosRepository {
   FirebaseUser _user;
   DocumentReference _documentReference;
 
-  addCategory(Category category) async {
-    final doc = _documentReference.collection('Categories').document();
+  Future<void> updateCategory(Category category) async {
+    final doc = _documentReference.collection('Categories').document(category.uid);
     return doc.setData(category.toMap());
+  }
+
+  Future<String> addCategory(Category category) async {
+    final doc = _documentReference.collection('Categories').document();
+    var categoryId;
+    await doc.setData(category.toMap())
+    .whenComplete(() {
+      //print('Document Added');
+      categoryId = doc.documentID;
+    }).catchError((e) {
+      print(e);
+    });
+
+    return categoryId;
+  }
+
+  Future<void> deleteCategory(Category category) async {
+    final doc = _documentReference.collection('Categories').document(category.uid);
+    return doc.delete();
   }
 
   Future<List<Category>> loadCategories() async {

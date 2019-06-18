@@ -21,6 +21,22 @@ class AddCategory extends CategoriesBlocEvent {
   String toString() => 'AddCategory';
 }
 
+class UpdatedCategory extends CategoriesBlocEvent {
+  final Category category;
+  UpdatedCategory(this.category);
+
+  @override
+  String toString() => 'UpdatedCategory';
+}
+
+class DeleteCategory extends CategoriesBlocEvent {
+  final Category category;
+  DeleteCategory(this.category);
+
+  @override
+  String toString() => 'DeleteCategory';
+}
+
 class AddTodo extends CategoriesBlocEvent {
   final Category currentCategory;
   final Todo todo;

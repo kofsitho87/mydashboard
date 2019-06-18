@@ -5,6 +5,9 @@ import '../bloc/blocs.dart';
 import '../models/models.dart';
 
 class AddCategoryApp extends StatelessWidget {
+  final Category currentCategory;
+  AddCategoryApp({this.currentCategory});
+
   CategoriesBloc category_bloc;
   BuildContext context;
 
@@ -13,6 +16,16 @@ class AddCategoryApp extends StatelessWidget {
   void _addCategoryEvent() {
     final category = Category('', categoryController.text);
     this.category_bloc.dispatch(AddCategory(category));
+  }
+
+  void _updateCategoryEvent(){
+    if( categoryController.text == currentCategory.title ){
+      Navigator.of(context).pop();
+      return;
+    }
+    final category = currentCategory;
+    category.title = categoryController.text;
+    this.category_bloc.dispatch(UpdatedCategory(category));
   }
 
   Widget get formView {
@@ -27,7 +40,7 @@ class AddCategoryApp extends StatelessWidget {
               controller: categoryController,
               onEditingComplete: () {
                 if( categoryController.text.length > 0 ){
-                  _addCategoryEvent();
+                  currentCategory == null ? _addCategoryEvent() : _updateCategoryEvent();
                 }
                 //Navigator.of(context).pop();
               },
@@ -60,7 +73,7 @@ class AddCategoryApp extends StatelessWidget {
           //   ),
           //   onPressed: () => Navigator.of(context).pop(),
           // ),
-          Text('카테고리 추가',
+          Text('카테고리 ${currentCategory != null ? '수정' : '추가'}',
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -104,6 +117,10 @@ class AddCategoryApp extends StatelessWidget {
   Widget build(BuildContext context) {
     this.context = context;
     this.category_bloc = BlocProvider.of<CategoriesBloc>(context);
+
+    if(currentCategory != null){
+      categoryController.text = currentCategory.title;
+    }
 
     return Scaffold(
         // appBar: AppBar(
