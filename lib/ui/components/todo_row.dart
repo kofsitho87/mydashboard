@@ -14,7 +14,7 @@ class TodoRowView extends StatelessWidget {
     var remainingDays = '기한없음';
     if (todo.completeDate != null) {
       final inDays = todo.completeDate.difference(DateTime.now()).inDays;
-      remainingDays = inDays == 0 ? 'Today' : inDays.toString() + '일 남음';
+      remainingDays = inDays == 0 ? '오늘' : (inDays < 0 ? '기한지남' : inDays.toString() + '일 남음');
     }
 
     return ListTile(
@@ -23,8 +23,8 @@ class TodoRowView extends StatelessWidget {
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: TextStyle(
-              color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
-      subtitle: Column(
+              color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+      subtitle: todo.completeDate == null ? null : Column(
         children: <Widget>[
           SizedBox(height: 8),
           Row(
@@ -41,15 +41,16 @@ class TodoRowView extends StatelessWidget {
         icon: Icon(
             todo.completed ? Icons.check_box : Icons.check_box_outline_blank,
             color: Colors.white,
-            size: 30),
+            size: 26),
         onPressed: () => onToggleComplteTodoAction(todo),
       ),
       trailing: IconButton(
         icon: Icon(
             todo.important ? Icons.star : Icons.star_border,
             color: Colors.white,
-            size: 30),
+            size: 26),
         onPressed: () {
+          if(todo.completed) return;
           todo.important = !todo.important; 
           onChangeTodoAction(todo);
         },
