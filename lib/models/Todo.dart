@@ -8,15 +8,17 @@ class Todo {
   DateTime completeDate;
   DateTime createdDate;
   bool completed;
+  bool important;
   String note;
 
   bool deleted = false;
 
-  Todo(this.title, this.category, {this.completed = false, String note, String id = '', DateTime completeDate, DateTime createdDate}) 
+  Todo(this.title, this.category, {this.completed = false, String note, String id = '', DateTime completeDate, DateTime createdDate, bool important}) 
     : this.id = id,
       this.note = note ?? '',
       this.completeDate = completeDate ?? null,
-      this.createdDate = createdDate ?? DateTime.now()
+      this.createdDate = createdDate ?? DateTime.now(),
+      this.important = important ?? false
       ;
 
   Todo copyWith({String id, String title, bool completed}) {
@@ -38,6 +40,7 @@ class Todo {
       "note"        : this.note,
       "createdDate" : this.createdDate,
       "deleted"     : this.deleted,
+      "important"   : this.important,
     };
     return data; 
   }

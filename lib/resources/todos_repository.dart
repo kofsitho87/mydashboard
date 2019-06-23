@@ -63,7 +63,8 @@ class TodosRepository {
           completed: snapshot['completed'],
           note: snapshot['note'],
           completeDate: snapshot['completeDate'] is Timestamp ? (snapshot['completeDate'] as Timestamp).toDate() : null,
-          createdDate: snapshot['createdDate'] is Timestamp ? (snapshot['createdDate'] as Timestamp).toDate() : null
+          createdDate: snapshot['createdDate'] is Timestamp ? (snapshot['createdDate'] as Timestamp).toDate() : null,
+          important: snapshot['important'],
         );
       }).toList();
       cate.todos = todos;

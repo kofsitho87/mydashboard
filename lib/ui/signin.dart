@@ -257,8 +257,8 @@ class _SigninApp extends State<SigninApp> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             _logoView,
-            SizedBox(height: 50),
-            _loginFormView(),
+            //SizedBox(height: 50),
+            //_loginFormView(),
             SizedBox(height: 30),
             socialLoginButtonsView,
           ],

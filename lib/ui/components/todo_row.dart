@@ -6,19 +6,15 @@ import '../../models/Todo.dart';
 class TodoRowView extends StatelessWidget {
   final Todo todo;
   final Function onToggleComplteTodoAction;
-  TodoRowView(this.todo, {@required this.onToggleComplteTodoAction});
+  final Function onChangeTodoAction;
+  TodoRowView(this.todo, {@required this.onToggleComplteTodoAction, @required this.onChangeTodoAction});
 
   @override
   Widget build(BuildContext context) {
     var remainingDays = '기한없음';
-    var monthDateString = '';
     if (todo.completeDate != null) {
       final inDays = todo.completeDate.difference(DateTime.now()).inDays;
       remainingDays = inDays == 0 ? 'Today' : inDays.toString() + '일 남음';
-      monthDateString = todo.completeDate.month.toString() +
-          '월 ' +
-          todo.completeDate.day.toString() +
-          '일';
     }
 
     return ListTile(
@@ -41,182 +37,23 @@ class TodoRowView extends StatelessWidget {
           )
         ],
       ),
-      trailing: IconButton(
+      leading: IconButton(
         icon: Icon(
             todo.completed ? Icons.check_box : Icons.check_box_outline_blank,
             color: Colors.white,
             size: 30),
         onPressed: () => onToggleComplteTodoAction(todo),
       ),
-      
+      trailing: IconButton(
+        icon: Icon(
+            todo.important ? Icons.star : Icons.star_border,
+            color: Colors.white,
+            size: 30),
+        onPressed: () {
+          todo.important = !todo.important; 
+          onChangeTodoAction(todo);
+        },
+      ),
     );
   }
-}
-
-Widget _TodoRowView(int index, Todo todo) {
-  var icon;
-  var color;
-  var colorDepp;
-  switch (todo.category.title) {
-    case "공부":
-      color = Color1;
-      colorDepp = Color1Deep;
-      icon = Icons.book;
-      break;
-    case "개인":
-      color = Color2;
-      colorDepp = Color2Deep;
-      icon = Icons.local_play;
-      break;
-    case "여가":
-      color = Color3;
-      colorDepp = Color3Deep;
-      icon = Icons.refresh;
-      break;
-    case "일":
-      color = Color4;
-      colorDepp = Color4Deep;
-      icon = Icons.work;
-      break;
-  }
-
-  var remainingDays = '기한없음';
-  var monthDateString = '';
-  if (todo.completeDate != null) {
-    final inDays = todo.completeDate.difference(DateTime.now()).inDays;
-    remainingDays = inDays == 0 ? 'Today' : inDays.toString() + '일 남음';
-    monthDateString = todo.completeDate.month.toString() +
-        '월 ' +
-        todo.completeDate.day.toString() +
-        '일';
-  }
-  final leftSide = Container(
-    height: 100,
-    width: 80,
-    //padding: EdgeInsets.all(20.0),
-    decoration: BoxDecoration(
-      color: color,
-      borderRadius: BorderRadius.only(
-        topLeft: Radius.circular(8.0),
-        bottomLeft: Radius.circular(8.0),
-      ),
-    ),
-    child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: <Widget>[
-        CircleAvatar(
-          backgroundColor: colorDepp,
-          child: Icon(icon, color: Colors.white),
-        ),
-        SizedBox(
-          height: 10,
-        ),
-        Text(
-          remainingDays,
-          style: TextStyle(color: Colors.white, fontSize: 12),
-        ),
-        SizedBox(
-          height: 5,
-        ),
-        Text(
-          monthDateString,
-          style: TextStyle(color: Colors.white, fontSize: 10.0),
-        )
-      ],
-    ),
-  );
-
-  final centerSide = Expanded(
-    flex: 1,
-    child: Padding(
-      padding: const EdgeInsets.all(10.0),
-      child: Column(
-        mainAxisSize: MainAxisSize.max,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: <Widget>[
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Text(todo.title,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              SizedBox(height: 5),
-              Text(
-                todo.note,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(color: Colors.grey),
-              )
-            ],
-          ),
-          Row(
-            children: <Widget>[
-              Icon(Icons.local_offer, color: color, size: 16),
-              SizedBox(
-                width: 5,
-              ),
-              Text(
-                todo.category.title,
-                style: TextStyle(color: Colors.grey),
-              ),
-            ],
-          ),
-        ],
-      ),
-    ),
-  );
-
-  return ListTile(
-    //leading: Icon(Icons.list, color: Colors.white),
-    title: Text(todo.title,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: TextStyle(
-            color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
-    subtitle: Column(
-      children: <Widget>[
-        SizedBox(height: 8),
-        Row(
-          children: <Widget>[
-            Icon(Icons.access_time, color: Colors.white, size: 16),
-            SizedBox(width: 5),
-            Text(remainingDays,
-                style: TextStyle(color: Colors.white, fontSize: 16))
-          ],
-        )
-      ],
-    ),
-    trailing: IconButton(
-      icon: Icon(
-          todo.completed ? Icons.check_box : Icons.check_box_outline_blank,
-          color: Colors.white,
-          size: 30),
-      onPressed: () => {},
-    ),
-    onTap: () => {},
-  );
-
-  return Padding(
-    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-    child: Container(
-      //transform: Matrix4.rotationZ(0.1),
-      height: 100,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.all(Radius.circular(8.0)),
-      ),
-      child: Row(
-        //crossAxisAlignment: CrossAxisAlignment.start,
-        //verticalDirection: VerticalDirection.up,
-        //mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: <Widget>[
-          leftSide,
-          centerSide,
-          //rightSide
-        ],
-      ),
-    ),
-  );
 }
