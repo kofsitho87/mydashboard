@@ -5,4 +5,5 @@ class Routes {
   static final category = "/";
   static final todos = "/todos";
   static final addTodo = "/addTodo";
+  static final addNote = "/addNote";
 }

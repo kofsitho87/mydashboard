@@ -28,11 +28,11 @@ class BackgroundContainerView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return bodyView;
-    return GestureDetector(
-      child: bodyView,
-      onTap: () {
-        Navigator.of(context).pop();
-      },
-    );
+    // return GestureDetector(
+    //   child: bodyView,
+    //   onTap: () {
+    //     Navigator.of(context).pop();
+    //   },
+    // );
   }
 }

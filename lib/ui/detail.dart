@@ -11,6 +11,7 @@ import './components/background_container.dart';
 import './colors.dart';
 import '../bloc/blocs.dart';
 import '../models/models.dart';
+import '../routes/index.dart';
 
 class DetailPageRoute extends CupertinoPageRoute {
   final String title;
@@ -56,6 +57,7 @@ class _DetailApp extends State<DetailApp> {
   final noteConttroller = TextEditingController();
   final focus = FocusNode();
   final focus2 = FocusNode();
+
   FocusNode currentFocus;
   FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin;
   KeyboardVisibilityNotification keyboardNoti;
@@ -68,7 +70,7 @@ class _DetailApp extends State<DetailApp> {
       _completeDate = widget.todo.completeDate;
       _category = widget.todo.category.uid;
       noteConttroller.text = widget.todo.note;
-    }else if(widget.currentCategory != null){
+    } else if (widget.currentCategory != null) {
       _category = widget.currentCategory.uid;
     }
     this.categories = categoriesBloc.currentState is CategoriesLoaded
@@ -81,6 +83,14 @@ class _DetailApp extends State<DetailApp> {
     _flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
     _flutterLocalNotificationsPlugin.initialize(initializationSettings,
         onSelectNotification: _onSelectNotofication);
+
+
+    focus.addListener(() {
+      currentFocus = focus;
+    });
+    focus2.addListener(() {
+      currentFocus = focus2;
+    });
 
     //FocusScope.of(context).requestFocus(focus);
     super.initState();
@@ -238,9 +248,9 @@ class _DetailApp extends State<DetailApp> {
   Widget get _todoTitleRow {
     return Container(
       decoration: BoxDecoration(
-        color: Color.fromRGBO(45, 58, 66, 1),
-        borderRadius: BorderRadius.circular(8),
-      ),
+          //color: Color.fromRGBO(45, 58, 66, 1),
+          //borderRadius: BorderRadius.circular(8),
+          ),
       padding: EdgeInsets.symmetric(horizontal: 20),
       margin: EdgeInsets.symmetric(vertical: 10),
       child: TextFormField(
@@ -280,9 +290,9 @@ class _DetailApp extends State<DetailApp> {
         : '';
     return Container(
       decoration: BoxDecoration(
-        color: Color.fromRGBO(45, 58, 66, 1),
-        borderRadius: BorderRadius.circular(8),
-      ),
+          // color: Color.fromRGBO(45, 58, 66, 1),
+          // borderRadius: BorderRadius.circular(8),
+          ),
       padding: EdgeInsets.symmetric(horizontal: 20, vertical: 5),
       margin: EdgeInsets.symmetric(vertical: 10),
       child: Stack(
@@ -321,19 +331,20 @@ class _DetailApp extends State<DetailApp> {
         ? this.categories.map((Category c) {
             return DropdownMenuItem(
                 value: c.uid,
-                child: Text(c.title, 
-                  style: TextStyle(color: Colors.grey),
+                child: Text(
+                  c.title,
+                  style: TextStyle(color: Colors.black),
                   overflow: TextOverflow.ellipsis,
                   maxLines: 1,
-            ));
+                ));
           }).toList()
         : null;
 
     return Container(
       decoration: BoxDecoration(
-        color: Color.fromRGBO(45, 58, 66, 1),
-        borderRadius: BorderRadius.circular(8),
-      ),
+          // color: Color.fromRGBO(45, 58, 66, 1),
+          // borderRadius: BorderRadius.circular(8),
+          ),
       padding: EdgeInsets.symmetric(horizontal: 20),
       margin: EdgeInsets.symmetric(vertical: 10),
       child: Row(
@@ -350,7 +361,7 @@ class _DetailApp extends State<DetailApp> {
                     // filled: true,
                     // fillColor: Colors.black,
                     // hintStyle: TextStyle(color: Colors.white),
-                    // labelStyle: TextStyle(color: Colors.white),
+                    labelStyle: TextStyle(color: Colors.white),
                     enabledBorder:
                         UnderlineInputBorder(borderSide: BorderSide.none)),
                 items: _categories,
@@ -369,9 +380,9 @@ class _DetailApp extends State<DetailApp> {
   Widget get _completeRowView {
     return Container(
         decoration: BoxDecoration(
-          color: Color.fromRGBO(45, 58, 66, 1),
-          borderRadius: BorderRadius.circular(8),
-        ),
+            // color: Color.fromRGBO(45, 58, 66, 1),
+            // borderRadius: BorderRadius.circular(8),
+            ),
         padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         margin: EdgeInsets.symmetric(vertical: 10),
         child: Row(
@@ -387,12 +398,14 @@ class _DetailApp extends State<DetailApp> {
   Widget get _noteRowView {
     return Container(
         decoration: BoxDecoration(
-          color: Color.fromRGBO(45, 58, 66, 1),
-          borderRadius: BorderRadius.circular(8),
-        ),
+            // color: Color.fromRGBO(45, 58, 66, 1),
+            // borderRadius: BorderRadius.circular(8),
+            ),
         padding: EdgeInsets.symmetric(horizontal: 20),
         margin: EdgeInsets.symmetric(vertical: 10),
-        child: TextFormField(
+        child: //Text(widget.todo != null ? widget.todo.note : ''),
+            TextFormField(
+          //enabled: false,
           focusNode: focus2,
           autocorrect: false,
           controller: noteConttroller,
@@ -414,18 +427,18 @@ class _DetailApp extends State<DetailApp> {
 
   Widget get _formView {
     return Form(
-      child: Padding(
-        padding: const EdgeInsets.only(
-          left: 20,
-          right: 20,
-          bottom: 50,
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          //crossAxisAlignment: CrossAxisAlignment.,
-          //mainAxisSize: MainAxisSize.max,
-          children: <Widget>[
-            Column(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        //crossAxisAlignment: CrossAxisAlignment.,
+        //mainAxisSize: MainAxisSize.max,
+        children: <Widget>[
+          Padding(
+            padding: const EdgeInsets.only(
+              left: 20,
+              right: 20,
+              //bottom: 50,
+            ),
+            child: Column(
               children: <Widget>[
                 _todoTitleRow,
                 _completeDateRow,
@@ -433,18 +446,18 @@ class _DetailApp extends State<DetailApp> {
                 _noteRowView,
               ],
             ),
-            MaterialButton(
-              padding: EdgeInsets.symmetric(vertical: 12),
-              minWidth: double.infinity,
-              color: Theme.of(context).accentColor,
-              //textColor: Colors.white,
-              child: Text(widget.todo == null ? '생성' : '업데이트',
-                  style: TextStyle(fontSize: 20)),
-              onPressed:
-                  widget.todo == null ? _saveTodoAction : _updateTodoAction,
-            ),
-          ],
-        ),
+          ),
+          MaterialButton(
+            //padding: EdgeInsets.symmetric(vertical: 12),
+            minWidth: double.infinity,
+            color: Theme.of(context).accentColor,
+            //textColor: Colors.white,
+            child: Text(widget.todo == null ? '생성' : '업데이트',
+                style: TextStyle(fontSize: 20)),
+            onPressed:
+                widget.todo == null ? _saveTodoAction : _updateTodoAction,
+          ),
+        ],
       ),
     );
   }
@@ -482,8 +495,7 @@ class _DetailApp extends State<DetailApp> {
                       : Icons.arrow_back_ios),
                   onPressed: () {
                     if (isShowKeyboard) {
-                      focus.unfocus();
-                      focus.unfocus();
+                      currentFocus.unfocus();
                     } else {
                       Navigator.of(context).pop();
                     }

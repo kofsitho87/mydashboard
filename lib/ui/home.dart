@@ -10,6 +10,7 @@ import '../routes/index.dart';
 import './category.dart';
 //import './todos.dart';
 import './detail.dart';
+import './note.dart';
 
 
 class HomeApp extends StatefulWidget {
@@ -44,7 +45,7 @@ class _HomeApp extends State<HomeApp> {
     return MaterialApp(
       theme: ThemeData(
         //primaryColor: Colors.white,
-        //primarySwatch: Colors.white,
+        //primarySwatch: Colors.white10,
         accentColor: Colors.white,
         primaryTextTheme: TextTheme(
           title: TextStyle(
@@ -69,7 +70,10 @@ class _HomeApp extends State<HomeApp> {
         // },
         Routes.addTodo: (context) {
           return DetailApp(title: 'Todo 생성');
-        }
+        },
+        Routes.addNote: (context) {
+          return NotePage();
+        },
       },
     );
   }

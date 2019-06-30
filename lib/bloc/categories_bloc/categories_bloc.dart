@@ -74,7 +74,7 @@ class CategoriesBloc extends Bloc<CategoriesBlocEvent, CategoriesBlocState> {
   Stream<CategoriesBlocState> _mapAddTodoToState(AddTodo event) async* {
     try {
       final categories = (currentState as CategoriesLoaded).categories;
-      yield TodosLoading();
+      //yield TodosLoading();
       final todoId = await this.todosRepository.addTodo(event.todo);
       final todo = event.todo;
       todo.id = todoId;
